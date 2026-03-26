@@ -7,3 +7,6 @@ Primary page:
 
 Direct deck page:
 - `smena_station_20260326_035818_20260326_043650.html`
+
+Secondary deck:
+- `pos-presentation.html`
