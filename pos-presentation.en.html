@@ -278,8 +278,12 @@
   }
   .what-card {
     background: var(--black);
-    padding: 32px;
+    padding: 28px 32px;
     position: relative;
+    min-height: 205px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   .what-card .num {
     font-family: var(--font-heading);
@@ -289,6 +293,47 @@
   }
   .what-card h3 { margin-bottom: 12px; font-size: 18px; }
   .what-card p { font-size: 14px; color: var(--gray); max-width: none; }
+  .service-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+    max-width: 82%;
+  }
+  .service-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px 7px 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.025);
+    color: var(--light-gray);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .service-icon {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: rgba(255,107,43,0.12);
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .svc-memory .service-icon { background: rgba(124,92,255,0.16); color: #a78bfa; }
+  .svc-task .service-icon { background: rgba(45,212,191,0.12); color: #5eead4; }
+  .svc-time .service-icon { background: rgba(96,165,250,0.14); color: #93c5fd; }
+  .svc-chat .service-icon { background: rgba(56,189,248,0.12); color: #7dd3fc; }
+  .svc-ai .service-icon { background: rgba(255,107,43,0.14); color: var(--orange); }
+  .svc-code .service-icon { background: rgba(134,239,172,0.12); color: #86efac; }
+  .svc-git .service-icon { background: rgba(255,255,255,0.08); color: var(--white); }
 
   /* ===================== SLIDE 3 — CONTEXT FILE ===================== */
   .slide-context { flex-direction: column; align-items: flex-start; max-width: 1100px; margin: 0 auto; gap: 48px; }
@@ -703,23 +748,55 @@
       <div class="what-grid anim-3">
         <div class="what-card">
           <div class="num">01</div>
-          <h3>Not an app</h3>
-          <p>POS is not one product or service. It is an environment you shape around your own work.</p>
+          <div>
+            <h3>Not an app</h3>
+            <p>POS is not one product or service. It is an environment you shape around your own work.</p>
+          </div>
+          <div class="service-row">
+            <div class="service-badge svc-memory"><span class="service-icon">Ob</span>Obsidian</div>
+            <div class="service-badge svc-task"><span class="service-icon">Ln</span>Linear</div>
+            <div class="service-badge svc-time"><span class="service-icon">Cal</span>Calendar</div>
+            <div class="service-badge svc-chat"><span class="service-icon">Tg</span>Telegram</div>
+          </div>
         </div>
         <div class="what-card">
           <div class="num">02</div>
-          <h3>Not a model</h3>
-          <p>AI is not the center. You are: your style, goals, constraints, and working rhythm.</p>
+          <div>
+            <h3>Not a model</h3>
+            <p>AI is not the center. You are: your style, goals, constraints, and working rhythm.</p>
+          </div>
+          <div class="service-row">
+            <div class="service-badge svc-ai"><span class="service-icon">Cl</span>Claude</div>
+            <div class="service-badge svc-ai"><span class="service-icon">GPT</span>ChatGPT</div>
+            <div class="service-badge svc-code"><span class="service-icon">Cx</span>Codex</div>
+            <div class="service-badge svc-memory"><span class="service-icon">MD</span>Context files</div>
+          </div>
         </div>
         <div class="what-card">
           <div class="num">03</div>
-          <h3>Personalized agents</h3>
-          <p>Microservices, prompts, and pipelines connected through one personal context.</p>
+          <div>
+            <h3>Personalized agents</h3>
+            <p>Microservices, prompts, and pipelines connected through one personal context.</p>
+          </div>
+          <div class="service-row">
+            <div class="service-badge svc-code"><span class="service-icon">CC</span>Claude Code</div>
+            <div class="service-badge svc-code"><span class="service-icon">CLI</span>Codex CLI</div>
+            <div class="service-badge svc-ai"><span class="service-icon">SP</span>Superpowers</div>
+            <div class="service-badge svc-memory"><span class="service-icon">SK</span>Skills</div>
+          </div>
         </div>
         <div class="what-card">
           <div class="num">04</div>
-          <h3>Living infrastructure</h3>
-          <p>Not a theory, but a working system that knows the context it needs about you.</p>
+          <div>
+            <h3>Living infrastructure</h3>
+            <p>Not a theory, but a working system that knows the context it needs about you.</p>
+          </div>
+          <div class="service-row">
+            <div class="service-badge svc-git"><span class="service-icon">Gh</span>GitHub</div>
+            <div class="service-badge svc-task"><span class="service-icon">MCP</span>MCP</div>
+            <div class="service-badge svc-memory"><span class="service-icon">Ob</span>Obsidian</div>
+            <div class="service-badge svc-chat"><span class="service-icon">Bot</span>Telegram bot</div>
+          </div>
         </div>
       </div>
     </div>
@@ -811,44 +888,44 @@
     </div>
   </div>
 
-  <!-- SLIDE 5: AGENTS -->
+  <!-- SLIDE 5: WORKSHOP LOOP -->
   <div class="slide" data-index="4">
     <div class="glow glow-2"></div>
     <div class="slide-agents">
       <div>
-        <div class="label anim-1">Layer 02 - Agents</div>
-        <h2 class="anim-2">Not bots. <em>Your operators.</em></h2>
+        <div class="label anim-1">Practice, not theory</div>
+        <h2 class="anim-2">Build one<br><em>operating loop</em></h2>
       </div>
       <div class="agents-grid anim-3">
         <div class="agent-card">
-          <div class="agent-role">RESEARCHER</div>
-          <h3>Researcher</h3>
-          <p>Digs deep, synthesizes, and filters through your priorities and context.</p>
+          <div class="agent-role">01 · CAPTURE</div>
+          <h3>Answer the intake</h3>
+          <p>Give the bot concrete context: role, project, blocker, support needed, and current AI use.</p>
         </div>
         <div class="agent-card">
-          <div class="agent-role">EDITOR</div>
-          <h3>Editor</h3>
-          <p>Knows your voice, style, and audience. Does not just fix - sharpens.</p>
+          <div class="agent-role">02 · CONTEXT</div>
+          <h3>Create CLAUDE.md</h3>
+          <p>Use /prompt to turn your answers into a short working agreement for Claude Code or Codex.</p>
         </div>
         <div class="agent-card">
-          <div class="agent-role">COORDINATOR</div>
-          <h3>Coordinator</h3>
-          <p>Manages task flow, delegates to other agents, and preserves context.</p>
+          <div class="agent-role">03 · CHOOSE</div>
+          <h3>Pick one workflow</h3>
+          <p>Start with one repeatable task: weekly plan, research brief, GitHub issue, or product audit.</p>
         </div>
         <div class="agent-card">
-          <div class="agent-role">ANALYST</div>
-          <h3>Analyst</h3>
-          <p>Turns data and meetings into structured insights for your decisions.</p>
+          <div class="agent-role">04 · RUN</div>
+          <h3>Use AI on real work</h3>
+          <p>Do not demo an abstract prompt. Run it on something you actually need this week.</p>
         </div>
         <div class="agent-card">
-          <div class="agent-role">PLANNER</div>
-          <h3>Planner</h3>
-          <p>Builds roadmaps and weekly plans around your rhythm and constraints.</p>
+          <div class="agent-role">05 · SAVE</div>
+          <h3>Store the result</h3>
+          <p>Put the output into your vault, repo, issue tracker, or calendar so it survives the chat.</p>
         </div>
         <div class="agent-card">
-          <div class="agent-role">COMMS</div>
-          <h3>Communications</h3>
-          <p>Writes emails, posts, and briefs in your tone, with your intent.</p>
+          <div class="agent-role">06 · IMPROVE</div>
+          <h3>Upgrade the loop</h3>
+          <p>Only after the loop works, turn it into a skill, connector, or lightweight agent.</p>
         </div>
       </div>
     </div>
@@ -989,7 +1066,7 @@
             <li>Memory disappears between sessions</li>
             <li>Tasks live separately from the person</li>
             <li>Tools compete with each other</li>
-            <li>AI is a smart chatbot</li>
+            <li>AI is used only when you remember to ask</li>
           </ul>
         </div>
         <div class="t-arrow">→</div>
@@ -1000,7 +1077,7 @@
             <li>Memory accumulates and connects</li>
             <li>The system knows you and your goals</li>
             <li>Tools form one operating loop</li>
-            <li>AI is a layer of extended thinking</li>
+            <li>AI helps at the exact step where work gets stuck</li>
           </ul>
         </div>
       </div>
@@ -1096,32 +1173,32 @@
   <div class="slide slide-final" data-index="10">
     <div class="glow glow-1"></div>
     <div class="glow glow-2"></div>
-    <div class="label anim-1">Personal Operating System</div>
-    <h1 class="anim-2">POS =</h1>
+    <div class="label anim-1">After the workshop</div>
+    <h1 class="anim-2">Start small.<br><em>Keep the loop.</em></h1>
     <div class="formula-display anim-3">
       <div class="formula-row">
-        <div class="formula-key">Personal context</div>
-        <div class="formula-val">- the core everything is built around</div>
+        <div class="formula-key">Day 1</div>
+        <div class="formula-val">- create a personal context file with /prompt</div>
       </div>
       <div class="formula-row">
-        <div class="formula-key">Agents</div>
-        <div class="formula-val">- operators with roles and your context</div>
+        <div class="formula-key">Day 2</div>
+        <div class="formula-val">- choose one workflow where AI can remove friction</div>
       </div>
       <div class="formula-row">
-        <div class="formula-key">Skills</div>
-        <div class="formula-val">- repeatable action patterns</div>
+        <div class="formula-key">Day 3</div>
+        <div class="formula-val">- run it on a real task and save the result</div>
       </div>
       <div class="formula-row">
-        <div class="formula-key">MCP</div>
-        <div class="formula-val">- bridges to the external world</div>
+        <div class="formula-key">Day 4-6</div>
+        <div class="formula-val">- repeat, then turn the pattern into a reusable prompt or skill</div>
       </div>
       <div class="formula-row">
-        <div class="formula-key">Tools</div>
-        <div class="formula-val">- execution interfaces</div>
+        <div class="formula-key">Day 7</div>
+        <div class="formula-val">- decide what to connect next: notes, tasks, calendar, code, or search</div>
       </div>
     </div>
     <div class="final-tagline anim-4">
-      A system where <em>AI becomes<br>not a chatbot, but a layer of extended thinking</em>
+      The goal is not to learn every tool.<br><em>The goal is to build one useful loop you will keep using.</em>
     </div>
   </div>
 
@@ -1145,7 +1222,19 @@
   // Slides
   const slides = document.querySelectorAll('.slide');
   const total = slides.length;
-  let current = 0;
+
+  function slideFromLocation() {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('slide') || window.location.hash.replace(/^#slide-?/, '').replace(/^#/, '');
+    const slideNumber = Number.parseInt(raw, 10);
+    if (!Number.isFinite(slideNumber)) return 0;
+    return Math.min(Math.max(slideNumber - 1, 0), total - 1);
+  }
+
+  let current = slideFromLocation();
+  slides.forEach((slide, i) => {
+    slide.classList.toggle('active', i === current);
+  });
 
   const progressBar = document.getElementById('progressBar');
   const currentSlideEl = document.getElementById('currentSlide');
@@ -1168,6 +1257,7 @@
     setTimeout(() => slides[current].classList.remove('exit'), 700);
     current = n;
     slides[current].classList.add('active');
+    window.history.replaceState(null, '', `#slide-${current + 1}`);
     updateUI();
   }
 
