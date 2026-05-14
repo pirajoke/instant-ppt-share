@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS — Personal Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #0a0a0a;
+    --dark: #111111;
+    --dark-2: #1a1a1a;
+    --gray: #888888;
+    --light-gray: #cccccc;
+    --white: #f5f5f5;
+    --orange: #ff6b2b;
+    --orange-dark: #e55a1f;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    overflow: hidden;
+    cursor: none;
+  }
+
+  /* GRAIN */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9997; opacity: 0.4;
+  }
+
+  /* CURSOR */
+  .cursor-dot {
+    width: 8px; height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s;
+  }
+  .cursor-ring {
+    width: 40px; height: 40px;
+    border: 1.5px solid rgba(255,107,43,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+  }
+
+  /* SLIDES CONTAINER */
+  .slides {
+    width: 100%; height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 2px;
+    background: var(--orange);
+    z-index: 100;
+    transition: width 0.5s ease;
+  }
+
+  /* SLIDE NUMBER */
+  .slide-counter {
+    position: fixed; bottom: 40px; right: 60px;
+    font-family: var(--font-heading);
+    font-size: 12px; letter-spacing: 2px;
+    color: var(--gray);
+    z-index: 100;
+  }
+  .slide-counter span { color: var(--orange); }
+
+  /* NAV DOTS */
+  .nav-dots {
+    position: fixed; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dark-2);
+    border: 1px solid var(--gray);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .nav-dot.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    transform: scale(1.4);
+  }
+
+  /* ARROW HINT */
+  .arrow-hint {
+    position: fixed; bottom: 38px; right: 140px;
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .arrow-btn {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(255,107,43,0.3);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--gray);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .arrow-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ===================== TYPOGRAPHY ===================== */
+  .label {
+    font-family: var(--font-heading);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 700; line-height: 0.95;
+    letter-spacing: -2px;
+    color: var(--white);
+  }
+  h1 em { color: var(--orange); font-style: normal; }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 600; line-height: 1.1;
+    letter-spacing: -1px;
+    color: var(--white);
+  }
+  h2 em { color: var(--orange); font-style: normal; }
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: clamp(20px, 2.5vw, 32px);
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  p {
+    font-size: clamp(15px, 1.4vw, 18px);
+    line-height: 1.7;
+    color: var(--light-gray);
+    max-width: 640px;
+  }
+
+  .big-text {
+    font-family: var(--font-heading);
+    font-size: clamp(18px, 2vw, 26px);
+    font-weight: 500; line-height: 1.5;
+    color: var(--white);
+    max-width: 720px;
+  }
+  .big-text em { color: var(--orange); font-style: normal; }
+
+  /* ===================== DECORATIVE ===================== */
+  .orange-line {
+    width: 60px; height: 2px;
+    background: var(--orange);
+    margin-bottom: 32px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid rgba(255,107,43,0.4);
+    border-radius: 2px;
+    font-family: var(--font-heading);
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+
+  /* Grid glow circle BG */
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+  }
+  .glow-1 { width: 600px; height: 600px; background: rgba(255,107,43,0.06); top: -200px; right: -200px; }
+  .glow-2 { width: 400px; height: 400px; background: rgba(255,107,43,0.04); bottom: -100px; left: -100px; }
+
+  /* ===================== SLIDE 1 — HERO ===================== */
+  .slide-hero { flex-direction: column; align-items: flex-start; justify-content: center; padding-bottom: 60px; }
+  .slide-hero .hero-content { max-width: 900px; }
+  .slide-hero .subtitle {
+    font-size: clamp(15px, 1.5vw, 20px);
+    color: var(--gray);
+    font-family: var(--font-body);
+    margin-top: 24px;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* grid lines */
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,107,43,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,107,43,0.04) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+  .hero-grid::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 60% 50%, transparent 30%, var(--black) 80%);
+  }
+
+  /* big background letters */
+  .hero-bg-text {
+    position: absolute;
+    right: -20px; top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-heading);
+    font-size: 280px; font-weight: 700;
+    letter-spacing: -10px;
+    color: rgba(255,107,43,0.04);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  /* ===================== SLIDE 2 — WHAT IS POS ===================== */
+  .slide-what {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .what-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    width: 100%;
+    background: rgba(255,107,43,0.1);
+    border: 1px solid rgba(255,107,43,0.1);
+  }
+  .what-card {
+    background: var(--black);
+    padding: 32px;
+    position: relative;
+  }
+  .what-card .num {
+    font-family: var(--font-heading);
+    font-size: 48px; font-weight: 700;
+    color: rgba(255,107,43,0.12);
+    position: absolute; top: 16px; right: 24px;
+  }
+  .what-card h3 { margin-bottom: 12px; font-size: 18px; }
+  .what-card p { font-size: 14px; color: var(--gray); max-width: none; }
+
+  /* ===================== SLIDE 3 — CONTEXT FILE ===================== */
+  .slide-context { flex-direction: column; align-items: flex-start; max-width: 1100px; margin: 0 auto; gap: 48px; }
+  .context-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; align-items: start; }
+  .context-questions {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .context-questions li {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 20px;
+    border-left: 2px solid rgba(255,107,43,0.3);
+    background: rgba(255,107,43,0.03);
+    font-size: 15px; color: var(--light-gray);
+    line-height: 1.4;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .context-questions li:hover {
+    border-left-color: var(--orange);
+    background: rgba(255,107,43,0.07);
+  }
+  .context-questions li .q-icon { color: var(--orange); font-family: var(--font-heading); font-weight: 700; flex-shrink: 0; }
+
+  .context-file {
+    background: var(--dark);
+    border: 1px solid rgba(255,107,43,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .context-file-header {
+    background: var(--dark-2);
+    padding: 12px 20px;
+    display: flex; gap: 8px; align-items: center;
+    border-bottom: 1px solid rgba(255,107,43,0.1);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28ca41; }
+  .context-file-name { margin-left: 8px; font-family: var(--font-heading); font-size: 12px; color: var(--gray); letter-spacing: 1px; }
+  .context-file-body { padding: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; }
+  .cf-comment { color: var(--gray); }
+  .cf-key { color: #7dd3fc; }
+  .cf-value { color: #86efac; }
+  .cf-orange { color: var(--orange); }
+
+  /* ===================== SLIDE 4 — LAYERS ===================== */
+  .slide-layers { flex-direction: column; max-width: 1200px; margin: 0 auto; gap: 32px; width: 100%; }
+  .layers-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  .layer-card {
+    background: var(--dark);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 4px;
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: default;
+  }
+  .layer-card:hover {
+    border-color: rgba(255,107,43,0.4);
+    transform: translateY(-4px);
+  }
+  .layer-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .layer-card:hover::before { opacity: 1; }
+  .layer-num {
+    font-family: var(--font-heading);
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--orange); margin-bottom: 16px;
+  }
+  .layer-card h3 { font-size: 16px; margin-bottom: 12px; }
+  .layer-card p { font-size: 13px; color: var(--gray); line-height: 1.6; max-width: none; }
+  .layer-icon {
+    font-size: 28px; margin-bottom: 12px;
+    display: block;
+  }
+
+  /* ===================== SLIDE 5 — AGENTS DETAIL ===================== */
+  .slide-agents { flex-direction: column; max-width: 1100px; margin: 0 auto; gap: 40px; width: 100%; }
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .agent-card {
+    background: var(--black);
+    padding: 28px 24px;
+    transition: background 0.3s;
+  }
+  .agent-card:hover { background: var(--dark); }
+  .agent-role {
+    font-family: var(--font-heading); font-size: 11px;
+    letter-spacing: 2px; color: var(--orange);
+    margin-bottom: 10px;
+  }
+  .agent-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .agent-card p { font-size: 13px; color: var(--gray); max-width: none; line-height: 1.5; }
+
+  /* ===================== SLIDE 6 — STACK ===================== */
+  .slide-stack { flex-direction: column; max-width: 1100px; margin: 0 auto; gap: 40px; width: 100%; }
+  .stack-list {
+    display: flex; flex-direction: column; gap: 2px;
+    width: 100%;
+  }
+  .stack-item {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    align-items: center;
+    gap: 32px;
+    padding: 20px 28px;
+    background: var(--dark);
+    border-left: 2px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .stack-item:hover {
+    border-left-color: var(--orange);
+    background: rgba(255,107,43,0.05);
+  }
+  .stack-tool {
+    font-family: var(--font-heading);
+    font-size: 17px; font-weight: 600;
+    color: var(--white);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .stack-tool .icon { font-size: 20px; }
+  .stack-desc { font-size: 14px; color: var(--gray); line-height: 1.4; }
+  .stack-role {
+    font-family: var(--font-heading);
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--orange); text-align: right;
+  }
+
+  /* ===================== SLIDE 7 — ALCHEMY ===================== */
+  .slide-alchemy { flex-direction: column; align-items: center; text-align: center; gap: 48px; max-width: 900px; margin: 0 auto; }
+  .alchemy-equation {
+    display: flex; align-items: center; gap: 20px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .alchemy-piece {
+    background: var(--dark);
+    border: 1px solid rgba(255,107,43,0.2);
+    border-radius: 4px;
+    padding: 16px 24px;
+    font-family: var(--font-heading);
+    font-size: 15px; font-weight: 600;
+    color: var(--white);
+    position: relative;
+  }
+  .alchemy-piece .sub {
+    font-size: 11px; font-weight: 400;
+    color: var(--orange); letter-spacing: 1px;
+    display: block; margin-top: 4px;
+  }
+  .plus {
+    font-family: var(--font-heading);
+    font-size: 28px; color: var(--orange); font-weight: 300;
+  }
+  .equals {
+    font-family: var(--font-heading);
+    font-size: 28px; color: var(--gray);
+  }
+  .alchemy-result {
+    background: linear-gradient(135deg, rgba(255,107,43,0.15), rgba(255,107,43,0.05));
+    border: 1px solid var(--orange);
+    border-radius: 4px;
+    padding: 20px 36px;
+    font-family: var(--font-heading);
+    font-size: 20px; font-weight: 700;
+    color: var(--orange);
+  }
+
+  .alchemy-effects {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px; width: 100%;
+  }
+  .effect-item {
+    text-align: left;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--dark);
+  }
+  .effect-item .arrow { color: var(--orange); font-family: var(--font-heading); font-weight: 700; margin-bottom: 8px; font-size: 18px; }
+  .effect-item p { font-size: 13px; color: var(--gray); max-width: none; }
+
+  /* ===================== SLIDE 8 — TRANSITION ===================== */
+  .slide-transition-slide { flex-direction: column; align-items: flex-start; max-width: 1000px; margin: 0 auto; gap: 48px; }
+  .transition-boxes {
+    display: grid; grid-template-columns: 1fr 80px 1fr; align-items: center; gap: 0; width: 100%;
+  }
+  .t-box-from, .t-box-to {
+    padding: 40px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .t-box-from { background: var(--dark-2); }
+  .t-box-to {
+    background: linear-gradient(135deg, rgba(255,107,43,0.08), var(--dark));
+    border-color: rgba(255,107,43,0.3);
+  }
+  .t-label {
+    font-family: var(--font-heading); font-size: 11px; letter-spacing: 2px;
+    color: var(--gray); margin-bottom: 20px;
+  }
+  .t-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .t-list li {
+    font-size: 15px; color: var(--light-gray);
+    padding-left: 16px; position: relative;
+  }
+  .t-list li::before { content: '—'; position: absolute; left: 0; color: var(--gray); }
+  .t-box-to .t-list li { color: var(--white); }
+  .t-box-to .t-list li::before { color: var(--orange); content: '→'; }
+  .t-arrow {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: var(--orange);
+    background: var(--dark);
+    height: 100%;
+    border-top: 1px solid rgba(255,107,43,0.15);
+    border-bottom: 1px solid rgba(255,107,43,0.15);
+  }
+
+  /* ===================== SLIDE 6 — SKILLS + MCP EXPLAINED ===================== */
+  .slide-explain { flex-direction: column; max-width: 1100px; margin: 0 auto; gap: 36px; width: 100%; }
+  .explain-header {}
+  .explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+  .explain-col { display: flex; flex-direction: column; gap: 16px; }
+  .explain-block {
+    background: var(--dark);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 28px;
+    flex: 1;
+  }
+  .explain-block-accent {
+    border-color: rgba(255,107,43,0.2);
+    background: linear-gradient(135deg, rgba(255,107,43,0.04), var(--dark));
+    position: relative;
+  }
+  .explain-block-accent::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), transparent);
+  }
+  .explain-title {
+    font-family: var(--font-heading); font-size: 12px;
+    font-weight: 700; letter-spacing: 3px;
+    color: var(--orange); margin-bottom: 14px;
+  }
+  .explain-text { font-size: 14px; color: var(--light-gray); line-height: 1.65; max-width: none; }
+  .explain-quote {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-left: 2px solid var(--orange);
+    font-size: 13px; color: var(--white);
+    font-weight: 500; line-height: 1.5;
+    background: rgba(255,107,43,0.05);
+  }
+  .explain-features { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .exf { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--gray); }
+  .exf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); flex-shrink: 0; margin-top: 5px; }
+  .explain-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .pill {
+    padding: 4px 10px;
+    background: rgba(255,107,43,0.08);
+    border: 1px solid rgba(255,107,43,0.2);
+    border-radius: 2px;
+    font-family: var(--font-heading);
+    font-size: 11px; color: var(--light-gray);
+  }
+
+  /* ===================== SLIDE 9 — RESOURCES ===================== */
+  .slide-resources { flex-direction: column; max-width: 1200px; margin: 0 auto; gap: 32px; width: 100%; }
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: rgba(255,107,43,0.06);
+    border: 1px solid rgba(255,107,43,0.08);
+    width: 100%;
+  }
+  .res-card {
+    background: var(--black);
+    padding: 20px;
+    display: flex; align-items: flex-start; gap: 14px;
+    text-decoration: none; color: inherit;
+    position: relative;
+    transition: background 0.25s;
+    cursor: pointer;
+  }
+  .res-card:hover { background: rgba(255,107,43,0.06); }
+  .res-card:hover .res-arrow { opacity: 1; color: var(--orange); }
+  .res-card:hover .res-title { color: var(--orange); }
+  .res-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .res-body { flex: 1; }
+  .res-tag {
+    font-family: var(--font-heading); font-size: 9px;
+    letter-spacing: 2px; color: var(--orange);
+    margin-bottom: 6px;
+  }
+  .res-title {
+    font-family: var(--font-heading); font-size: 14px; font-weight: 600;
+    color: var(--white); margin-bottom: 6px;
+    transition: color 0.2s;
+  }
+  .res-desc { font-size: 12px; color: var(--gray); line-height: 1.5; }
+  .res-arrow {
+    font-size: 16px; color: var(--gray);
+    opacity: 0; transition: opacity 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+
+  /* ===================== SLIDE 10 — FINAL ===================== */
+  .slide-final { flex-direction: column; align-items: center; text-align: center; gap: 0; }
+  .formula-display {
+    margin-top: 40px;
+    display: flex; flex-direction: column; gap: 4px;
+    width: 100%; max-width: 800px;
+  }
+  .formula-row {
+    display: grid; grid-template-columns: 200px 1fr;
+    align-items: center; gap: 24px;
+    padding: 14px 24px;
+    background: var(--dark);
+    border-left: 2px solid rgba(255,107,43,0.2);
+  }
+  .formula-row:hover { border-left-color: var(--orange); }
+  .formula-key {
+    font-family: var(--font-heading); font-size: 13px;
+    font-weight: 600; color: var(--orange);
+    text-align: right;
+  }
+  .formula-val {
+    font-size: 14px; color: var(--light-gray);
+  }
+  .final-tagline {
+    margin-top: 48px;
+    font-family: var(--font-heading);
+    font-size: clamp(16px, 1.8vw, 22px);
+    font-weight: 600; color: var(--white);
+    max-width: 700px; line-height: 1.5;
+  }
+  .final-tagline em { color: var(--orange); font-style: normal; }
+
+  /* ===================== ANIMATIONS ===================== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active .anim-1 { animation: fadeUp 0.6s 0.1s both ease-out; }
+  .slide.active .anim-2 { animation: fadeUp 0.6s 0.25s both ease-out; }
+  .slide.active .anim-3 { animation: fadeUp 0.6s 0.4s both ease-out; }
+  .slide.active .anim-4 { animation: fadeUp 0.6s 0.55s both ease-out; }
+  .slide.active .anim-5 { animation: fadeUp 0.6s 0.7s both ease-out; }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Progress -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Counter -->
+<div class="slide-counter"><span id="currentSlide">01</span> / <span id="totalSlides">11</span></div>
+
+<!-- Nav Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- Arrow Buttons -->
+<div class="arrow-hint">
+  <button class="arrow-btn" id="prevBtn">←</button>
+  <button class="arrow-btn" id="nextBtn">→</button>
+</div>
+
+<!-- ==================== SLIDES ==================== -->
+<div class="slides" id="slidesContainer">
+
+  <!-- SLIDE 1: HERO -->
+  <div class="slide slide-hero active" data-index="0">
+    <div class="hero-grid"></div>
+    <div class="hero-bg-text">POS</div>
+    <div class="glow glow-1"></div>
+    <div class="hero-content">
+      <div class="label anim-1">Personal Operating System</div>
+      <h1 class="anim-2">Your personal<br><em>operating</em><br>system</h1>
+      <p class="subtitle anim-3">Not a tool stack. Not a chatbot. A personal cognitive infrastructure where you are the system core.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: WHAT IS POS -->
+  <div class="slide" data-index="1">
+    <div class="glow glow-1"></div>
+    <div class="slide-what">
+      <div>
+        <div class="label anim-1">What POS is</div>
+        <h2 class="anim-2">An environment built<br>around <em>you</em></h2>
+      </div>
+      <div class="what-grid anim-3">
+        <div class="what-card">
+          <div class="num">01</div>
+          <h3>Not an app</h3>
+          <p>POS is not one product or service. It is an environment you shape around your own work.</p>
+        </div>
+        <div class="what-card">
+          <div class="num">02</div>
+          <h3>Not a model</h3>
+          <p>AI is not the center. You are: your style, goals, constraints, and working rhythm.</p>
+        </div>
+        <div class="what-card">
+          <div class="num">03</div>
+          <h3>Personalized agents</h3>
+          <p>Microservices, prompts, and pipelines connected through one personal context.</p>
+        </div>
+        <div class="what-card">
+          <div class="num">04</div>
+          <h3>Living infrastructure</h3>
+          <p>Not a theory, but a working system that knows the context it needs about you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: CONTEXT FILE -->
+  <div class="slide" data-index="2">
+    <div class="glow glow-2"></div>
+    <div class="slide-context">
+      <div>
+        <div class="label anim-1">System core</div>
+        <h2 class="anim-2">A personal context file -<br><em>2-4 pages</em> about you</h2>
+      </div>
+      <div class="context-layout anim-3">
+        <ul class="context-questions">
+          <li><span class="q-icon">01</span> Who you are and how you think</li>
+          <li><span class="q-icon">02</span> How you make decisions</li>
+          <li><span class="q-icon">03</span> How you like to work</li>
+          <li><span class="q-icon">04</span> What matters to you</li>
+          <li><span class="q-icon">05</span> Goals, principles, pain points, ambitions</li>
+          <li><span class="q-icon">06</span> Patterns and weak spots</li>
+        </ul>
+        <div class="context-file">
+          <div class="context-file-header">
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <span class="context-file-name">personal-context.md</span>
+          </div>
+          <div class="context-file-body">
+            <div class="cf-comment"># — — — PERSONAL CONTEXT — — —</div>
+            <br>
+            <div><span class="cf-key">identity:</span> <span class="cf-value">founder, systems thinker</span></div>
+            <div><span class="cf-key">thinking:</span> <span class="cf-value">visual, top-down</span></div>
+            <div><span class="cf-key">work_style:</span> <span class="cf-value">deep focus, async</span></div>
+            <div><span class="cf-key">energy_peak:</span> <span class="cf-value">morning</span></div>
+            <br>
+            <div><span class="cf-key">goals:</span></div>
+            <div>&nbsp; - <span class="cf-orange">build POS for founders</span></div>
+            <div>&nbsp; - <span class="cf-orange">ship faster with less noise</span></div>
+            <br>
+            <div><span class="cf-key">constraints:</span> <span class="cf-value">limited focus budget</span></div>
+            <div><span class="cf-key">strengths:</span> <span class="cf-value">vision, synthesis</span></div>
+            <div><span class="cf-key">gaps:</span> <span class="cf-value">execution detail</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: LAYERS OVERVIEW -->
+  <div class="slide" data-index="3">
+    <div class="glow glow-1"></div>
+    <div class="slide-layers">
+      <div>
+        <div class="label anim-1">POS architecture</div>
+        <h2 class="anim-2">Five layers of the system</h2>
+      </div>
+      <div class="layers-grid anim-3">
+        <div class="layer-card">
+          <div class="layer-num">LAYER 01</div>
+          <span class="layer-icon">◎</span>
+          <h3>Context</h3>
+          <p>Your personal frame of interpretation. Without it: generally good. With it: answers that fit you.</p>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 02</div>
+          <span class="layer-icon">◈</span>
+          <h3>Agents</h3>
+          <p>Role operators: researcher, editor, analyst, planner. Yours, not generic.</p>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 03</div>
+          <span class="layer-icon">◇</span>
+          <h3>Skills</h3>
+          <p>Repeatable mini-practices: debrief a meeting, write a post, build a roadmap.</p>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 04</div>
+          <span class="layer-icon">⬡</span>
+          <h3>MCP servers</h3>
+          <p>Bridges to the real world: files, tasks, calendar, notes, code.</p>
+        </div>
+        <div class="layer-card">
+          <div class="layer-num">LAYER 05</div>
+          <span class="layer-icon">▣</span>
+          <h3>Tool stack</h3>
+          <p>Obsidian, Linear, Calendar, Telegram, Claude Code - nodes in a personal environment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: AGENTS -->
+  <div class="slide" data-index="4">
+    <div class="glow glow-2"></div>
+    <div class="slide-agents">
+      <div>
+        <div class="label anim-1">Layer 02 - Agents</div>
+        <h2 class="anim-2">Not bots. <em>Your operators.</em></h2>
+      </div>
+      <div class="agents-grid anim-3">
+        <div class="agent-card">
+          <div class="agent-role">RESEARCHER</div>
+          <h3>Researcher</h3>
+          <p>Digs deep, synthesizes, and filters through your priorities and context.</p>
+        </div>
+        <div class="agent-card">
+          <div class="agent-role">EDITOR</div>
+          <h3>Editor</h3>
+          <p>Knows your voice, style, and audience. Does not just fix - sharpens.</p>
+        </div>
+        <div class="agent-card">
+          <div class="agent-role">COORDINATOR</div>
+          <h3>Coordinator</h3>
+          <p>Manages task flow, delegates to other agents, and preserves context.</p>
+        </div>
+        <div class="agent-card">
+          <div class="agent-role">ANALYST</div>
+          <h3>Analyst</h3>
+          <p>Turns data and meetings into structured insights for your decisions.</p>
+        </div>
+        <div class="agent-card">
+          <div class="agent-role">PLANNER</div>
+          <h3>Planner</h3>
+          <p>Builds roadmaps and weekly plans around your rhythm and constraints.</p>
+        </div>
+        <div class="agent-card">
+          <div class="agent-role">COMMS</div>
+          <h3>Communications</h3>
+          <p>Writes emails, posts, and briefs in your tone, with your intent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: SKILLS + MCP EXPLAINED -->
+  <div class="slide" data-index="5">
+    <div class="glow glow-2"></div>
+    <div class="slide-explain">
+      <div class="explain-header">
+        <div class="label anim-1">How it works inside</div>
+        <h2 class="anim-2">Skills, MCP<br>and <em>CLAUDE.MD</em></h2>
+      </div>
+      <div class="explain-grid anim-3">
+        <div class="explain-col">
+          <div class="explain-block">
+            <div class="explain-title">CLAUDE.MD / AGENTS.MD</div>
+            <p class="explain-text">The main AI-agent configuration file - global or project-level. It sets context, rules, and behavior from the first second.</p>
+          </div>
+          <div class="explain-block">
+            <div class="explain-title">MCP</div>
+            <div class="explain-pills">
+              <span class="pill">📅 Calendar</span>
+              <span class="pill">⚡ Linear</span>
+              <span class="pill">✈️ Telegram</span>
+              <span class="pill">📁 Files</span>
+              <span class="pill">💻 Code</span>
+            </div>
+            <p class="explain-text">Like USB ports for an AI agent. Through MCP, the agent connects to Calendar, Linear, Telegram, and any other tool.</p>
+            <div class="explain-quote">One standard - not custom hacks for every tool</div>
+          </div>
+        </div>
+        <div class="explain-col">
+          <div class="explain-block explain-block-accent">
+            <div class="explain-title">SKILLS</div>
+            <p class="explain-text">A Markdown file with step-by-step instructions for the agent. Like an SOP for an employee: you do not explain the task from scratch every time.</p>
+            <div class="explain-quote">Reusable system prompts with files - more structured, and activated by triggers</div>
+            <div class="explain-features">
+              <div class="exf"><span class="exf-dot"></span>Resources load only when needed</div>
+              <div class="exf"><span class="exf-dot"></span>A trigger activates the right skill automatically</div>
+              <div class="exf"><span class="exf-dot"></span>One skill - one repeatable practice</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: STACK -->
+  <div class="slide" data-index="6">
+    <div class="glow glow-1"></div>
+    <div class="slide-stack">
+      <div>
+        <div class="label anim-1">Layer 05 - Base stack</div>
+        <h2 class="anim-2">Each tool is<br><em>its own reality</em></h2>
+      </div>
+      <div class="stack-list anim-3">
+        <div class="stack-item">
+          <div class="stack-tool"><span class="icon">📓</span> Obsidian</div>
+          <div class="stack-desc">Long-term memory, thinking, links between ideas. Everything you cannot afford to lose.</div>
+          <div class="stack-role">MEMORY · THINKING</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-tool"><span class="icon">⚡</span> Linear</div>
+          <div class="stack-desc">Task structure, sprints, execution. Where the work moves from and to.</div>
+          <div class="stack-role">TASKS · EXECUTION</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-tool"><span class="icon">📅</span> Google Calendar</div>
+          <div class="stack-desc">Time as a resource. Rhythm, focus blocks, meetings - your operating cadence.</div>
+          <div class="stack-role">TIME · RHYTHM</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-tool"><span class="icon">✈️</span> Telegram</div>
+          <div class="stack-desc">Fast system entry. An interface to your agents from anywhere.</div>
+          <div class="stack-role">INTERFACE · ENTRY</div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-tool"><span class="icon">⬡</span> Claude Code</div>
+          <div class="stack-desc">Implementation, automation, and new-tool creation. The system engine.</div>
+          <div class="stack-role">BUILDING · CREATION</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: ALCHEMY -->
+  <div class="slide" data-index="7">
+    <div class="glow glow-1"></div>
+    <div class="slide-alchemy">
+      <div>
+        <div class="label anim-1">Core idea</div>
+        <h2 class="anim-2"><em>Context alchemy</em></h2>
+      </div>
+      <div class="alchemy-equation anim-3">
+        <div class="alchemy-piece">Personal context<span class="sub">who you are</span></div>
+        <div class="plus">+</div>
+        <div class="alchemy-piece">Task context<span class="sub">what to solve</span></div>
+        <div class="plus">+</div>
+        <div class="alchemy-piece">Tool context<span class="sub">what to use</span></div>
+        <div class="equals">=</div>
+        <div class="alchemy-result">Context alchemy</div>
+      </div>
+      <div class="alchemy-effects anim-4">
+        <div class="effect-item">
+          <div class="arrow">↑</div>
+          <p>Answers become deeper and more precise</p>
+        </div>
+        <div class="effect-item">
+          <div class="arrow">↑</div>
+          <p>Decisions become strategically aligned</p>
+        </div>
+        <div class="effect-item">
+          <div class="arrow">↑</div>
+          <p>Agents become yours, not abstract</p>
+        </div>
+        <div class="effect-item">
+          <div class="arrow">↑</div>
+          <p>The system amplifies you as an operator</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: TRANSITION -->
+  <div class="slide" data-index="8">
+    <div class="glow glow-2"></div>
+    <div class="slide-transition-slide">
+      <div>
+        <div class="label anim-1">Key transition</div>
+        <h2 class="anim-2">From tools<br>to <em>cognitive infrastructure</em></h2>
+      </div>
+      <div class="transition-boxes anim-3">
+        <div class="t-box-from">
+          <div class="t-label">BEFORE</div>
+          <ul class="t-list">
+            <li>A set of disconnected AI tools</li>
+            <li>Memory disappears between sessions</li>
+            <li>Tasks live separately from the person</li>
+            <li>Tools compete with each other</li>
+            <li>AI is a smart chatbot</li>
+          </ul>
+        </div>
+        <div class="t-arrow">→</div>
+        <div class="t-box-to">
+          <div class="t-label">AFTER</div>
+          <ul class="t-list">
+            <li>Personal cognitive infrastructure</li>
+            <li>Memory accumulates and connects</li>
+            <li>The system knows you and your goals</li>
+            <li>Tools form one operating loop</li>
+            <li>AI is a layer of extended thinking</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: RESOURCES -->
+  <div class="slide" data-index="9">
+    <div class="glow glow-1"></div>
+    <div class="slide-resources">
+      <div>
+        <div class="label anim-1">Where to start</div>
+        <h2 class="anim-2">Useful materials<br>to <em>start</em></h2>
+      </div>
+      <div class="resources-grid anim-3">
+        <a class="res-card" href="https://github.com/ai-mindset-org/pos-sprint/blob/main/practice/naming-convention-vault-structure.md" target="_blank">
+          <div class="res-icon">📁</div>
+          <div class="res-body">
+            <div class="res-tag">POS SPRINT</div>
+            <div class="res-title">Vault Structure Guide</div>
+            <div class="res-desc">A guide to file naming and Obsidian vault structure with AI-agent integration</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://github.com/obra/superpowers" target="_blank">
+          <div class="res-icon">⚡</div>
+          <div class="res-body">
+            <div class="res-tag">GITHUB</div>
+            <div class="res-title">Superpowers</div>
+            <div class="res-desc">A framework of composable agentic skills for building software with coding agents</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://github.com/anthropics/skills" target="_blank">
+          <div class="res-icon">🧠</div>
+          <div class="res-body">
+            <div class="res-tag">ANTHROPIC</div>
+            <div class="res-title">Claude Skills</div>
+            <div class="res-desc">Official Claude Skills examples - reusable instruction sets for specialized tasks</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://www.pencil.dev" target="_blank">
+          <div class="res-icon">✏️</div>
+          <div class="res-body">
+            <div class="res-tag">TOOL</div>
+            <div class="res-title">Pencil.dev</div>
+            <div class="res-desc">Creates canvas designs and instantly turns them into code inside your IDE</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://exa.ai" target="_blank">
+          <div class="res-icon">🔍</div>
+          <div class="res-body">
+            <div class="res-tag">SEARCH API</div>
+            <div class="res-title">Exa AI</div>
+            <div class="res-desc">AI search engine with APIs for web search and real-time structured data retrieval</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://code.claude.com/docs" target="_blank">
+          <div class="res-icon">⬡</div>
+          <div class="res-body">
+            <div class="res-tag">DOCS</div>
+            <div class="res-title">Claude Code Docs</div>
+            <div class="res-desc">Complete Claude Code docs - an AI tool for working with code in the terminal and IDE</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank">
+          <div class="res-icon">🔌</div>
+          <div class="res-body">
+            <div class="res-tag">PROTOCOL</div>
+            <div class="res-title">MCP — Intro</div>
+            <div class="res-desc">Model Context Protocol: an open standard for connecting AI apps to external systems and data</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+        <a class="res-card" href="https://github.com/modelcontextprotocol/servers" target="_blank">
+          <div class="res-icon">🗄️</div>
+          <div class="res-body">
+            <div class="res-tag">GITHUB</div>
+            <div class="res-title">MCP Servers</div>
+            <div class="res-desc">Ready reference MCP server implementations for connecting LLMs to tools and data sources</div>
+          </div>
+          <div class="res-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: FINAL FORMULA -->
+  <div class="slide slide-final" data-index="10">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="label anim-1">Personal Operating System</div>
+    <h1 class="anim-2">POS =</h1>
+    <div class="formula-display anim-3">
+      <div class="formula-row">
+        <div class="formula-key">Personal context</div>
+        <div class="formula-val">- the core everything is built around</div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-key">Agents</div>
+        <div class="formula-val">- operators with roles and your context</div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-key">Skills</div>
+        <div class="formula-val">- repeatable action patterns</div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-key">MCP</div>
+        <div class="formula-val">- bridges to the external world</div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-key">Tools</div>
+        <div class="formula-val">- execution interfaces</div>
+      </div>
+    </div>
+    <div class="final-tagline anim-4">
+      A system where <em>AI becomes<br>not a chatbot, but a layer of extended thinking</em>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+  // Cursor
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animateCursor() {
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // Slides
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  const progressBar = document.getElementById('progressBar');
+  const currentSlideEl = document.getElementById('currentSlide');
+  const totalSlidesEl = document.getElementById('totalSlides');
+  totalSlidesEl.textContent = String(total).padStart(2, '0');
+
+  // Create dots
+  const dotsContainer = document.getElementById('navDots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(n) {
+    if (n < 0 || n >= total || n === current) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(() => slides[current].classList.remove('exit'), 700);
+    current = n;
+    slides[current].classList.add('active');
+    updateUI();
+  }
+
+  function updateUI() {
+    const pct = ((current + 1) / total) * 100;
+    progressBar.style.width = pct + '%';
+    currentSlideEl.textContent = String(current + 1).padStart(2, '0');
+    document.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo(current + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+  });
+
+  // Swipe support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (dx < -50) goTo(current + 1);
+    if (dx > 50) goTo(current - 1);
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
