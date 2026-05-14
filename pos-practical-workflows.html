@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal AI Workflows - Practical POS</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080b10;
+    --panel: #141a22;
+    --panel-2: #1d2530;
+    --text: #eef3f8;
+    --muted: #93a0ad;
+    --line: #2e3946;
+    --orange: #ff6b2b;
+    --green: #5ebc8c;
+    --blue: #62a7ff;
+    --amber: #e0b64f;
+    --red: #dd6666;
+    --purple: #9a8cff;
+    --font: "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(circle at 50% 40%, #000 0 38%, transparent 78%);
+    pointer-events: none;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+    z-index: 50;
+  }
+  .progress {
+    position: fixed;
+    inset: 0 auto auto 0;
+    height: 3px;
+    width: 0;
+    background: var(--orange);
+    z-index: 100;
+    transition: width 0.25s ease;
+  }
+  .brand {
+    position: fixed;
+    left: 30px;
+    top: 24px;
+    z-index: 100;
+    color: var(--green);
+    font-size: 13px;
+  }
+  .slides {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 72px 92px 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(18px);
+    pointer-events: none;
+    transition: opacity 0.36s ease, transform 0.36s ease;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .inner {
+    width: min(1180px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .kicker {
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  h1, h2 {
+    letter-spacing: 0;
+    line-height: 1.02;
+  }
+  h1 {
+    max-width: 980px;
+    font-size: clamp(58px, 7vw, 112px);
+  }
+  h2 {
+    max-width: 980px;
+    font-size: clamp(42px, 4.5vw, 72px);
+  }
+  .subtitle {
+    max-width: 760px;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.55;
+    font-family: var(--sans);
+  }
+  .small {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .big-line {
+    max-width: 1000px;
+    font-size: clamp(34px, 4.8vw, 78px);
+    line-height: 1.1;
+    font-weight: 800;
+  }
+  .accent { color: var(--orange); }
+  .blue { color: var(--blue); }
+  .green { color: var(--green); }
+  .amber { color: var(--amber); }
+  .purple { color: var(--purple); }
+  .panel {
+    position: relative;
+    background: linear-gradient(180deg, rgba(29,37,48,0.96), rgba(18,23,31,0.96));
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 22px 24px;
+    overflow: hidden;
+  }
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--accent, var(--orange));
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .point {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .point:last-child { border-bottom: 0; }
+  .num {
+    color: var(--orange);
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .point b,
+  .tile b,
+  .step b {
+    display: block;
+    font-size: 18px;
+    line-height: 1.25;
+    margin-bottom: 7px;
+  }
+  .point span,
+  .tile span,
+  .step span {
+    display: block;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .tile {
+    min-height: 154px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: rgba(20,26,34,0.72);
+  }
+  .tile .label {
+    color: var(--orange);
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    align-items: stretch;
+  }
+  .flow-cell {
+    min-height: 210px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    background: rgba(20,26,34,0.82);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .flow-cell strong {
+    display: block;
+    font-size: 20px;
+  }
+  .flow-cell p {
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .arrow {
+    color: var(--orange);
+    font-size: 26px;
+    align-self: center;
+    text-align: center;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 22px;
+    align-items: stretch;
+  }
+  .prompt-box {
+    border: 1px solid rgba(94,188,140,0.5);
+    background: rgba(8,11,16,0.72);
+    border-radius: 8px;
+    padding: 18px;
+    color: #cfe9dc;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+  .diagram {
+    display: grid;
+    grid-template-columns: 1fr 56px 1fr 56px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .diagram-node {
+    min-height: 150px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: rgba(20,26,34,0.86);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .diagram-node strong {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .step {
+    min-height: 170px;
+    border-top: 3px solid var(--orange);
+    background: rgba(20,26,34,0.74);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .counter {
+    position: fixed;
+    right: 36px;
+    bottom: 28px;
+    color: var(--muted);
+    font-size: 12px;
+    z-index: 100;
+  }
+  .counter b { color: var(--text); font-weight: 500; }
+  .counter i { color: var(--orange); font-style: normal; }
+  .dots {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 99px;
+    border: 1px solid var(--muted);
+    background: transparent;
+    cursor: pointer;
+  }
+  .dot.active {
+    border-color: var(--orange);
+    background: var(--orange);
+  }
+  .arrows {
+    position: fixed;
+    right: 28px;
+    top: 24px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .arrow-btn {
+    width: 36px;
+    height: 30px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .cover-mark {
+    position: absolute;
+    right: 8vw;
+    top: 18vh;
+    font-size: 240px;
+    font-weight: 900;
+    color: rgba(255,107,43,0.08);
+    font-family: var(--sans);
+    pointer-events: none;
+  }
+  .cover-rule {
+    width: min(680px, 100%);
+    height: 2px;
+    background: linear-gradient(90deg, var(--orange), transparent);
+    margin: 14px 0 8px;
+  }
+  .workshop-tag {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .chip {
+    border: 1px solid rgba(255,107,43,0.4);
+    border-radius: 999px;
+    padding: 7px 12px;
+    color: var(--amber);
+    font-size: 12px;
+  }
+  @media (max-width: 900px) {
+    html, body { overflow: auto; }
+    .slide {
+      position: relative;
+      min-height: 100vh;
+      padding: 72px 22px 92px;
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+    .slides { height: auto; }
+    .grid-2, .grid-3, .grid-5, .flow, .split, .diagram, .timeline {
+      grid-template-columns: 1fr;
+    }
+    .arrow { display: none; }
+    .brand, .arrows, .counter, .dots { position: static; transform: none; margin: 12px 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="brand">Network School</div>
+<div class="arrows">
+  <button class="arrow-btn" id="prev" aria-label="Previous slide">&larr;</button>
+  <button class="arrow-btn" id="next" aria-label="Next slide">&rarr;</button>
+</div>
+
+<main class="slides">
+  <section class="slide active" data-title="Cover">
+    <div class="cover-mark">AI</div>
+    <div class="inner">
+      <div class="kicker">Practical POS workshop</div>
+      <h1>Personal AI Workflows</h1>
+      <div class="cover-rule"></div>
+      <p class="subtitle">A simple way to turn your context into repeatable, useful AI outputs.</p>
+      <div class="workshop-tag">
+        <span class="chip">No agent theory</span>
+        <span class="chip">One workflow today</span>
+        <span class="chip">Practical first</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Problem">
+    <div class="inner">
+      <div class="kicker">Problem</div>
+      <div class="big-line">One chat is useful. <span class="accent">A system is reusable.</span></div>
+      <div class="grid-2">
+        <div class="panel" style="--accent: var(--red)">
+          <div class="point"><div class="num">01</div><div><b>Context resets</b><span>You explain yourself again in every new chat.</span></div></div>
+          <div class="point"><div class="num">02</div><div><b>Prompts stay in your head</b><span>The method works once, then disappears.</span></div></div>
+        </div>
+        <div class="panel" style="--accent: var(--amber)">
+          <div class="point"><div class="num">03</div><div><b>Output quality varies</b><span>Small wording changes create very different results.</span></div></div>
+          <div class="point"><div class="num">04</div><div><b>No feedback loop</b><span>The system does not learn what worked last time.</span></div></div>
+        </div>
+      </div>
+      <p class="small">Practical move: choose one repeated task you do every week. That is where your POS starts.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Simple Model">
+    <div class="inner">
+      <div class="kicker">The simple POS model</div>
+      <h2>The simple POS loop</h2>
+      <p class="subtitle">Context -> Procedure -> Tool -> Output -> Feedback</p>
+      <div class="flow">
+        <div class="flow-cell" style="border-color: var(--blue)"><strong>Context</strong><p>What AI needs to know about you, your work, and your standards.</p></div>
+        <div class="flow-cell" style="border-color: var(--green)"><strong>Procedure</strong><p>The steps AI should follow, not just a clever prompt.</p></div>
+        <div class="flow-cell" style="border-color: var(--purple)"><strong>Tool</strong><p>Where the work happens: chat, docs, code, notes, calendar, bot.</p></div>
+        <div class="flow-cell" style="border-color: var(--amber)"><strong>Output</strong><p>A useful artifact: plan, summary, deck, checklist, decision, code.</p></div>
+        <div class="flow-cell" style="border-color: var(--orange)"><strong>Feedback</strong><p>What you save so the next run gets better.</p></div>
+      </div>
+      <p class="small">This is enough for the first version. Agents can come later.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Context File">
+    <div class="inner">
+      <div class="kicker">Step 1</div>
+      <h2>Write a small context file</h2>
+      <div class="split">
+        <div class="panel" style="--accent: var(--blue)">
+          <div class="point"><div class="num">01</div><div><b>Who I am</b><span>Role, background, current situation.</span></div></div>
+          <div class="point"><div class="num">02</div><div><b>What I am building</b><span>Projects, goals, current priorities.</span></div></div>
+          <div class="point"><div class="num">03</div><div><b>How I work</b><span>Style, constraints, rhythm, decision habits.</span></div></div>
+          <div class="point"><div class="num">04</div><div><b>What good looks like</b><span>Examples, tone, quality bar, formats you prefer.</span></div></div>
+        </div>
+        <div class="panel" style="--accent: var(--green)">
+          <div class="kicker">Prompt to use today</div>
+          <div class="prompt-box">Interview me one question at a time and create a 2-page personal context file for working with AI.
+
+Focus on:
+- what I am building
+- my goals this month
+- my constraints
+- my preferred style
+- examples of good output
+
+At the end, produce a clean markdown file.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Workflow Template">
+    <div class="inner">
+      <div class="kicker">Step 2</div>
+      <h2>Turn one repeated task into a workflow</h2>
+      <div class="grid-5">
+        <div class="tile"><div class="label">Trigger</div><b>When do I run it?</b><span>Example: every Sunday, after a meeting, before publishing.</span></div>
+        <div class="tile"><div class="label">Input</div><b>What do I give AI?</b><span>Notes, transcript, goal, rough idea, task list, screenshots.</span></div>
+        <div class="tile"><div class="label">Steps</div><b>What should AI do?</b><span>Clarify, structure, draft, compare, improve, check.</span></div>
+        <div class="tile"><div class="label">Output</div><b>What should come out?</b><span>A plan, summary, message, deck, checklist, code patch.</span></div>
+        <div class="tile"><div class="label">Done when</div><b>How do I judge it?</b><span>Clear, usable, specific, saved, ready for next action.</span></div>
+      </div>
+      <p class="small">If you cannot define the output, the workflow is not ready yet.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Example">
+    <div class="inner">
+      <div class="kicker">Real example</div>
+      <h2>Network School live deck</h2>
+      <div class="diagram">
+        <div class="diagram-node" style="border-color: var(--green)"><strong>Telegram intake</strong><span class="small">Seven short answers from participants.</span></div>
+        <div class="arrow">-></div>
+        <div class="diagram-node" style="border-color: var(--blue)"><strong>Structured signal</strong><span class="small">Location, role, blocker, need, AI usage.</span></div>
+        <div class="arrow">-></div>
+        <div class="diagram-node" style="border-color: var(--orange)"><strong>Live presentation</strong><span class="small">A deck the facilitator can use immediately.</span></div>
+      </div>
+      <div class="grid-3">
+        <div class="tile"><div class="label">Why it works</div><b>Small input</b><span>Participants do not need to write essays.</span></div>
+        <div class="tile"><div class="label">Why it works</div><b>Clear structure</b><span>The bot asks for fields the workshop can use.</span></div>
+        <div class="tile"><div class="label">Why it works</div><b>Visible output</b><span>The room sees itself in the deck.</span></div>
+      </div>
+      <p class="small">This is a Personal Operating System pattern without needing autonomous agents.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Superpowers">
+    <div class="inner">
+      <div class="kicker">Superpowers lesson</div>
+      <h2>Procedure beats clever prompting</h2>
+      <div class="grid-3">
+        <div class="panel" style="--accent: var(--blue)">
+          <div class="tile" style="border:0; padding:0; background:transparent"><div class="label">Rule 1</div><b>Clarify before doing</b><span>Ask: what is the goal, what are the constraints, what would success look like?</span></div>
+        </div>
+        <div class="panel" style="--accent: var(--amber)">
+          <div class="tile" style="border:0; padding:0; background:transparent"><div class="label">Rule 2</div><b>Plan before building</b><span>Ask AI to show the steps before it creates the final output.</span></div>
+        </div>
+        <div class="panel" style="--accent: var(--green)">
+          <div class="tile" style="border:0; padding:0; background:transparent"><div class="label">Rule 3</div><b>Verify before trusting</b><span>Ask for checks, assumptions, gaps, and evidence before you use the result.</span></div>
+        </div>
+      </div>
+      <p class="small">Superpowers is useful here as a principle: good AI work is a repeatable operating procedure, not a magic prompt.</p>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Exercise">
+    <div class="inner">
+      <div class="kicker">Workshop exercise</div>
+      <h2>Build your first workflow in 20 minutes</h2>
+      <div class="timeline">
+        <div class="step"><b>1. Pick a task</b><span>Choose something repeated, annoying, or important.</span></div>
+        <div class="step"><b>2. Add context</b><span>Write the minimum facts AI needs about you and the task.</span></div>
+        <div class="step"><b>3. Write procedure</b><span>Define trigger, input, steps, output, done when.</span></div>
+        <div class="step"><b>4. Run once</b><span>Use any AI tool. Do not optimize too early.</span></div>
+        <div class="step"><b>5. Save feedback</b><span>What worked, what failed, what should change next time?</span></div>
+      </div>
+      <div class="prompt-box">Help me design one repeatable AI workflow.
+
+My repeated task is: [task]
+My context is: [short context]
+The output I want is: [artifact]
+
+Ask clarifying questions first. Then give me a workflow template I can reuse.</div>
+    </div>
+  </section>
+
+  <section class="slide" data-title="Final">
+    <div class="inner">
+      <div class="kicker">Takeaway</div>
+      <div class="big-line">Do not start with agents. <span class="accent">Start with one workflow.</span></div>
+      <div class="grid-3">
+        <div class="tile"><div class="label">Start</div><b>Context in</b><span>Give AI the minimum useful picture of you and the task.</span></div>
+        <div class="tile"><div class="label">Run</div><b>Useful output out</b><span>Produce something you can actually use today.</span></div>
+        <div class="tile"><div class="label">Improve</div><b>Feedback back in</b><span>Save what worked so the next run is easier.</span></div>
+      </div>
+      <p class="subtitle">A Personal Operating System is not more tools. It is a repeatable way to turn your context into action.</p>
+    </div>
+  </section>
+</main>
+
+<div class="dots" id="dots"></div>
+<div class="counter"><b id="current">01</b> <i>/</i> <span id="total">09</span></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const dots = document.getElementById("dots");
+  const current = document.getElementById("current");
+  const total = document.getElementById("total");
+  const progress = document.getElementById("progress");
+  let index = 0;
+
+  total.textContent = String(slides.length).padStart(2, "0");
+  slides.forEach((_, i) => {
+    const dot = document.createElement("button");
+    dot.className = "dot" + (i === 0 ? " active" : "");
+    dot.setAttribute("aria-label", "Slide " + (i + 1));
+    dot.addEventListener("click", () => show(i));
+    dots.appendChild(dot);
+  });
+
+  function show(next) {
+    index = (next + slides.length) % slides.length;
+    slides.forEach((slide, i) => slide.classList.toggle("active", i === index));
+    document.querySelectorAll(".dot").forEach((dot, i) => dot.classList.toggle("active", i === index));
+    current.textContent = String(index + 1).padStart(2, "0");
+    progress.style.width = (((index + 1) / slides.length) * 100).toFixed(2) + "%";
+    history.replaceState(null, "", "#slide-" + (index + 1));
+  }
+
+  document.getElementById("next").addEventListener("click", () => show(index + 1));
+  document.getElementById("prev").addEventListener("click", () => show(index - 1));
+  document.addEventListener("keydown", event => {
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      show(index + 1);
+    }
+    if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      show(index - 1);
+    }
+  });
+
+  const hashIndex = Number((location.hash.match(/slide-(\d+)/) || [])[1] || 1) - 1;
+  show(Number.isFinite(hashIndex) ? hashIndex : 0);
+</script>
+</body>
+</html>
