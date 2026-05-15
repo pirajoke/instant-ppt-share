@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastData AE100 — AI Voice Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0a0a0a;
+      --dark: #111111;
+      --dark-2: #1a1a1a;
+      --dark-3: #222222;
+      --orange: #ff6b2b;
+      --orange-dim: rgba(255, 107, 43, 0.15);
+      --orange-glow: rgba(255, 107, 43, 0.4);
+      --white: #f5f5f5;
+      --gray: #888888;
+      --light-gray: #cccccc;
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --radius: 16px;
+      --radius-sm: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+    }
+
+    /* Grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Progress bar */
+    .progress {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--dark-2);
+      z-index: 100;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--orange);
+      width: 12.5%;
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Counter */
+    .counter {
+      position: fixed;
+      top: 24px; right: 32px;
+      font-family: var(--font-heading);
+      font-size: 14px;
+      color: var(--gray);
+      z-index: 100;
+      letter-spacing: 1px;
+    }
+
+    /* Navigation dots */
+    .nav-dots {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--dark-3);
+      border: 1px solid var(--gray);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .nav-dot.active {
+      background: var(--orange);
+      border-color: var(--orange);
+      box-shadow: 0 0 12px var(--orange-glow);
+    }
+
+    /* Slides */
+    main { width: 100%; height: 100%; position: relative; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      padding: 60px 80px;
+    }
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    .slide.exit {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+
+    .slide-inner {
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* Typography */
+    h1 {
+      font-family: var(--font-heading);
+      font-size: clamp(48px, 6vw, 80px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -2px;
+    }
+    h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -1px;
+      margin-bottom: 32px;
+    }
+    h3 {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    p, li {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--light-gray);
+    }
+    .subtitle {
+      font-size: 22px;
+      color: var(--gray);
+      margin-top: 16px;
+      font-weight: 300;
+    }
+    .accent { color: var(--orange); }
+    .dim { color: var(--gray); }
+
+    /* Cards grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-top: 32px;
+    }
+    .card {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: var(--orange);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(255, 107, 43, 0.1);
+    }
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    .card h3 { color: var(--white); }
+    .card p { font-size: 15px; color: var(--gray); }
+
+    /* Stack table */
+    .stack-table {
+      width: 100%;
+      margin-top: 24px;
+    }
+    .stack-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 200px;
+      padding: 16px 20px;
+      border-left: 3px solid transparent;
+      border-radius: var(--radius-sm);
+      transition: all 0.3s ease;
+      align-items: center;
+    }
+    .stack-row:hover {
+      background: var(--dark-2);
+      border-left-color: var(--orange);
+    }
+    .stack-row .tool {
+      font-family: var(--font-heading);
+      font-weight: 500;
+      color: var(--white);
+    }
+    .stack-row .desc { color: var(--gray); font-size: 15px; }
+    .stack-row .role { color: var(--orange); font-size: 14px; text-align: right; }
+
+    /* Screenshots */
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .screenshot {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.3s ease;
+      aspect-ratio: 16/10;
+    }
+    .screenshot:hover {
+      border-color: var(--orange);
+      transform: scale(1.02);
+    }
+    .screenshot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Metric blocks */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .metric {
+      text-align: center;
+      padding: 32px;
+      background: var(--dark-2);
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+    .metric-label {
+      font-size: 15px;
+      color: var(--gray);
+    }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    .flow-step {
+      background: var(--dark-2);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .flow-step .step-num {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      color: var(--orange);
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    .flow-step .step-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .flow-arrow {
+      color: var(--orange);
+      font-size: 24px;
+    }
+
+    /* Hero glow */
+    .hero-glow {
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%);
+      opacity: 0.15;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Grid background */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    /* Tag */
+    .tag {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--orange-dim);
+      color: var(--orange);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* CTA button */
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      background: var(--orange);
+      color: var(--black);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 16px;
+      border-radius: 40px;
+      text-decoration: none;
+      margin-top: 32px;
+      transition: all 0.3s ease;
+    }
+    .cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--orange-glow);
+    }
+
+    .contact-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 34px;
+      flex-wrap: wrap;
+    }
+    .qr-card {
+      padding: 18px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.35), 0 0 60px rgba(255, 107, 43, 0.12);
+    }
+    .telegram-qr {
+      display: block;
+      width: min(238px, 42vw);
+      height: auto;
+    }
+    .contact-copy {
+      text-align: left;
+      max-width: 330px;
+    }
+    .contact-handle {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: 0;
+    }
+    .contact-copy p {
+      font-size: 16px;
+      margin-top: 10px;
+      color: var(--gray);
+    }
+    .contact-copy .cta {
+      margin-top: 22px;
+    }
+
+    /* Two-column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    /* Animations */
+    .anim-1 { transition-delay: 0.1s; }
+    .anim-2 { transition-delay: 0.25s; }
+    .anim-3 { transition-delay: 0.4s; }
+    .anim-4 { transition-delay: 0.55s; }
+
+    .slide .anim-1, .slide .anim-2, .slide .anim-3, .slide .anim-4 {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .slide.active .anim-1, .slide.active .anim-2, .slide.active .anim-3, .slide.active .anim-4 {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .slide { padding: 40px 24px; }
+      .two-col { grid-template-columns: 1fr; gap: 24px; }
+      .screenshots { grid-template-columns: 1fr 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .stack-row { grid-template-columns: 1fr; gap: 4px; }
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+      .contact-panel { gap: 14px; margin-top: 24px; }
+      .qr-card { padding: 14px; border-radius: 20px; }
+      .telegram-qr { width: min(180px, 66vw); }
+      .contact-copy { text-align: center; }
+      .contact-handle { font-size: 28px; }
+      .contact-copy p { font-size: 14px; margin-top: 6px; }
+      .contact-copy .cta { margin-top: 16px; padding: 14px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress"><div class="progress-bar"></div></div>
+  <div class="counter">01 / 08</div>
+
+  <main id="deck">
+
+    <!-- SLIDE 01: HERO -->
+    <section class="slide active">
+      <div class="grid-bg"></div>
+      <div class="hero-glow"></div>
+      <div class="slide-inner" style="text-align: center;">
+        <div class="anim-1 tag">AI Voice Agent</div>
+        <h1 class="anim-2">FastData <span class="accent">AE100</span></h1>
+        <p class="subtitle anim-3">Production-ready AI agent that conducts outbound sales calls in Polish for a European fuel card & transport platform</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 02: PROBLEM -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="tag anim-1">The Challenge</span>
+        <h2 class="anim-2">Why automate <span class="accent">outbound calls?</span></h2>
+        <div class="cards anim-3">
+          <div class="card">
+            <div class="card-icon">$</div>
+            <h3>High Cost per Lead</h3>
+            <p>Human agents cost 5-10x more per qualified conversation than AI voice</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">~</div>
+            <h3>Scaling Bottleneck</h3>
+            <p>Hiring and training native Polish speakers takes months, not days</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">!</div>
+            <h3>Inconsistent Quality</h3>
+            <p>Human fatigue leads to missed scripts, objection handling gaps, and lost deals</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">%</div>
+            <h3>No Real-Time Data</h3>
+            <p>Traditional call centers lack instant analytics and cost-per-call visibility</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 03: SOLUTION -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="tag anim-1">The Solution</span>
+        <h2 class="anim-2">What <span class="accent">AE100</span> does</h2>
+        <div class="cards anim-3">
+          <div class="card">
+            <div class="card-icon">1</div>
+            <h3>Full Conversation Flow</h3>
+            <p>Greeting, qualification, product pitch, objection handling, activation link delivery — all automated</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">2</div>
+            <h3>Natural Polish Voice</h3>
+            <p>ElevenLabs TTS generates human-like speech indistinguishable from a real agent</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">3</div>
+            <h3>Telegram Control Panel</h3>
+            <p>Operations team manages calls, leads, billing, and reviews transcripts from Telegram</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">4</div>
+            <h3>Real-Time Tracking</h3>
+            <p>Cost per call, call duration, conversion metrics — all visible in real-time</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 04: TECH STACK -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="tag anim-1">Technology</span>
+        <h2 class="anim-2">Tech Stack</h2>
+        <div class="stack-table anim-3">
+          <div class="stack-row">
+            <span class="tool">Vapi.ai</span>
+            <span class="desc">Voice AI orchestration platform</span>
+            <span class="role">Conversation Engine</span>
+          </div>
+          <div class="stack-row">
+            <span class="tool">Deepgram Nova-3</span>
+            <span class="desc">Real-time speech recognition</span>
+            <span class="role">STT</span>
+          </div>
+          <div class="stack-row">
+            <span class="tool">ElevenLabs</span>
+            <span class="desc">Natural Polish voice synthesis</span>
+            <span class="role">TTS</span>
+          </div>
+          <div class="stack-row">
+            <span class="tool">GPT-4o-mini</span>
+            <span class="desc">Fast, cost-effective reasoning</span>
+            <span class="role">LLM Brain</span>
+          </div>
+          <div class="stack-row">
+            <span class="tool">Twilio</span>
+            <span class="desc">Telephony infrastructure</span>
+            <span class="role">Calls & SMS</span>
+          </div>
+          <div class="stack-row">
+            <span class="tool">Python + Telegram</span>
+            <span class="desc">Control panel and operations bot</span>
+            <span class="role">Management</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 05: DEMO -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="tag anim-1">Product Demo</span>
+        <h2 class="anim-2">Interface & <span class="accent">Control Panel</span></h2>
+        <div class="screenshots anim-3">
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-1.webp" alt="FastData Dashboard" loading="lazy">
+          </div>
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-2.webp" alt="FastData Calls View" loading="lazy">
+          </div>
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-3.webp" alt="Telegram Bot Menu" loading="lazy">
+          </div>
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-4.webp" alt="Telegram Add Lead" loading="lazy">
+          </div>
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-5.webp" alt="Telegram Prompt Editor" loading="lazy">
+          </div>
+          <div class="screenshot">
+            <img src="https://maximgrachev.meshly.fr/img/fastdata-1.webp" alt="Dashboard Overview" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 06: METRICS -->
+    <section class="slide">
+      <div class="slide-inner" style="text-align: center;">
+        <span class="tag anim-1">Performance</span>
+        <h2 class="anim-2">Key <span class="accent">Metrics</span></h2>
+        <div class="metrics anim-3">
+          <div class="metric">
+            <div class="metric-value">€0.70</div>
+            <div class="metric-label">Cost per 3-minute call</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">24/7</div>
+            <div class="metric-label">Always available, no breaks</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">~3s</div>
+            <div class="metric-label">Response latency</div>
+          </div>
+        </div>
+        <div class="metrics anim-4" style="margin-top: 20px;">
+          <div class="metric">
+            <div class="metric-value">PL</div>
+            <div class="metric-label">Native Polish language</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">100%</div>
+            <div class="metric-label">Script adherence</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">Live</div>
+            <div class="metric-label">Real-time cost tracking</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 07: HOW IT WORKS -->
+    <section class="slide">
+      <div class="slide-inner">
+        <span class="tag anim-1">Architecture</span>
+        <h2 class="anim-2">How It <span class="accent">Works</span></h2>
+        <div class="flow anim-3">
+          <div class="flow-step">
+            <div class="step-num">01</div>
+            <div class="step-title">Lead Upload</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">02</div>
+            <div class="step-title">Call Init</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">03</div>
+            <div class="step-title">AI Conversation</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">04</div>
+            <div class="step-title">Qualification</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">05</div>
+            <div class="step-title">Link Delivery</div>
+          </div>
+        </div>
+        <div class="flow anim-4" style="margin-top: 24px;">
+          <div class="flow-step">
+            <div class="step-num">06</div>
+            <div class="step-title">Transcript</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">07</div>
+            <div class="step-title">Analytics</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="step-num">08</div>
+            <div class="step-title">Optimize</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 08: CTA -->
+    <section class="slide">
+      <div class="grid-bg"></div>
+      <div class="hero-glow"></div>
+      <div class="slide-inner" style="text-align: center;">
+        <div class="anim-1 tag">Ready to Scale</div>
+        <h1 class="anim-2">Let's <span class="accent">talk.</span></h1>
+        <p class="subtitle anim-3">AI voice agents that sell. In any language. At any scale.</p>
+        <div class="contact-panel anim-4">
+          <a class="qr-card" href="https://t.me/PIRAJOKE" aria-label="Open Telegram @PIRAJOKE">
+            <svg class="telegram-qr" viewBox="0 0 33 33" role="img" aria-label="Telegram QR code for @PIRAJOKE" xmlns="http://www.w3.org/2000/svg">
+              <defs><linearGradient id="qrGradient" x1="3" y1="3" x2="30" y2="30" gradientUnits="userSpaceOnUse"><stop stop-color="#0f3b9f"/><stop offset="1" stop-color="#6d138f"/></linearGradient></defs>
+              <rect width="33" height="33" rx="3" fill="#fff"/>
+              <path fill="url(#qrGradient)" d="M2 2h7v1H2zM10 2h1v1H10zM17 2h1v1H17zM19 2h1v1H19zM22 2h1v1H22zM24 2h7v1H24zM2 3h1v1H2zM8 3h1v1H8zM13 3h1v1H13zM16 3h1v1H16zM18 3h5v1H18zM24 3h1v1H24zM30 3h1v1H30zM2 4h1v1H2zM4 4h3v1H4zM8 4h1v1H8zM12 4h1v1H12zM14 4h1v1H14zM16 4h1v1H16zM18 4h1v1H18zM22 4h1v1H22zM24 4h1v1H24zM26 4h3v1H26zM30 4h1v1H30zM2 5h1v1H2zM4 5h3v1H4zM8 5h1v1H8zM10 5h3v1H10zM15 5h1v1H15zM17 5h2v1H17zM20 5h2v1H20zM24 5h1v1H24zM26 5h3v1H26zM30 5h1v1H30zM2 6h1v1H2zM4 6h3v1H4zM8 6h1v1H8zM12 6h3v1H12zM16 6h2v1H16zM19 6h3v1H19zM24 6h1v1H24zM26 6h3v1H26zM30 6h1v1H30zM2 7h1v1H2zM8 7h1v1H8zM11 7h3v1H11zM15 7h1v1H15zM17 7h2v1H17zM20 7h2v1H20zM24 7h1v1H24zM30 7h1v1H30zM2 8h7v1H2zM10 8h1v1H10zM12 8h1v1H12zM14 8h1v1H14zM16 8h1v1H16zM18 8h1v1H18zM20 8h1v1H20zM22 8h1v1H22zM24 8h7v1H24zM12 9h2v1H12zM15 9h2v1H15zM18 9h1v1H18zM22 9h1v1H22zM4 10h1v1H4zM6 10h3v1H6zM10 10h1v1H10zM12 10h1v1H12zM15 10h1v1H15zM17 10h1v1H17zM21 10h3v1H21zM27 10h1v1H27zM30 10h1v1H30zM2 11h2v1H2zM5 11h1v1H5zM7 11h1v1H7zM12 11h1v1H12zM14 11h1v1H14zM16 11h1v1H16zM21 11h3v1H21zM27 11h1v1H27zM30 11h1v1H30zM2 12h1v1H2zM4 12h3v1H4zM8 12h1v1H8zM11 12h1v1H11zM16 12h2v1H16zM19 12h1v1H19zM21 12h2v1H21zM28 12h3v1H28zM2 13h1v1H2zM5 13h2v1H5zM10 13h1v1H10zM13 13h1v1H13zM16 13h5v1H16zM22 13h5v1H22zM29 13h1v1H29zM3 14h1v1H3zM6 14h3v1H6zM13 14h1v1H13zM15 14h2v1H15zM18 14h2v1H18zM21 14h2v1H21zM24 14h2v1H24zM28 14h1v1H28zM3 15h2v1H3zM6 15h2v1H6zM11 15h1v1H11zM16 15h1v1H16zM18 15h3v1H18zM23 15h3v1H23zM2 16h1v1H2zM5 16h1v1H5zM7 16h3v1H7zM11 16h3v1H11zM15 16h4v1H15zM20 16h1v1H20zM22 16h2v1H22zM25 16h1v1H25zM28 16h3v1H28zM2 17h1v1H2zM6 17h2v1H6zM10 17h2v1H10zM14 17h2v1H14zM17 17h1v1H17zM21 17h2v1H21zM24 17h2v1H24zM30 17h1v1H30zM2 18h4v1H2zM7 18h2v1H7zM10 18h1v1H10zM13 18h1v1H13zM16 18h1v1H16zM19 18h1v1H19zM22 18h3v1H22zM26 18h2v1H26zM29 18h1v1H29zM3 19h5v1H3zM9 19h2v1H9zM12 19h1v1H12zM15 19h1v1H15zM18 19h1v1H18zM20 19h2v1H20zM23 19h1v1H23zM27 19h4v1H27zM2 20h1v1H2zM5 20h1v1H5zM8 20h2v1H8zM11 20h2v1H11zM16 20h1v1H16zM19 20h1v1H19zM23 20h1v1H23zM25 20h6v1H25zM3 21h5v1H3zM9 21h3v1H9zM14 21h1v1H14zM16 21h1v1H16zM20 21h3v1H20zM24 21h2v1H24zM2 22h1v1H2zM4 22h3v1H4zM8 22h1v1H8zM11 22h3v1H11zM16 22h1v1H16zM18 22h3v1H18zM22 22h9v1H22zM10 23h2v1H10zM14 23h2v1H14zM17 23h4v1H17zM22 23h1v1H22zM26 23h1v1H26zM29 23h2v1H29zM2 24h7v1H2zM11 24h5v1H11zM17 24h2v1H17zM21 24h2v1H21zM24 24h1v1H24zM26 24h1v1H26zM28 24h1v1H28zM30 24h1v1H30zM2 25h1v1H2zM8 25h1v1H8zM10 25h3v1H10zM14 25h4v1H14zM22 25h1v1H22zM26 25h1v1H26zM2 26h1v1H2zM4 26h3v1H4zM8 26h1v1H8zM10 26h7v1H10zM19 26h2v1H19zM22 26h6v1H22zM29 26h2v1H29zM2 27h1v1H2zM4 27h3v1H4zM8 27h1v1H8zM12 27h1v1H12zM14 27h2v1H14zM18 27h1v1H18zM22 27h2v1H22zM26 27h2v1H26zM2 28h1v1H2zM4 28h3v1H4zM8 28h1v1H8zM10 28h1v1H10zM12 28h1v1H12zM15 28h1v1H15zM17 28h1v1H17zM19 28h1v1H19zM21 28h1v1H21zM25 28h2v1H25zM30 28h1v1H30zM2 29h1v1H2zM8 29h1v1H8zM12 29h2v1H12zM15 29h1v1H15zM17 29h1v1H17zM19 29h1v1H19zM21 29h1v1H21zM23 29h3v1H23zM29 29h1v1H29zM2 30h7v1H2zM11 30h1v1H11zM15 30h1v1H15zM17 30h1v1H17zM20 30h4v1H20zM26 30h1v1H26zM28 30h3v1H28z"/>
+              <circle cx="16.5" cy="16.5" r="3.9" fill="#31208f"/>
+              <path d="M12.9 16.25 20.85 13.15c.38-.15.72.19.56.58l-2.85 7.62c-.14.37-.62.46-.88.16l-2.02-2.34-1.31 1.25c-.25.24-.67.07-.67-.28v-1.86l4.92-4.43-6.02 3.68c-.46.28-.99-.23-.72-.7.09-.16.24-.29.43-.36Z" fill="#fff"/>
+            </svg>
+          </a>
+          <div class="contact-copy">
+            <a class="contact-handle" href="https://t.me/PIRAJOKE">@PIRAJOKE</a>
+            <p>Scan to continue the conversation on Telegram.</p>
+            <a href="mailto:maximegrachev@gmail.com" class="cta">Get in Touch &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="nav-dots" id="navDots"></div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const progressBar = document.querySelector('.progress-bar');
+    const counter = document.querySelector('.counter');
+    const navDotsContainer = document.getElementById('navDots');
+    let current = 0;
+    const total = slides.length;
+
+    // Create nav dots
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      navDotsContainer.appendChild(dot);
+    }
+
+    function goTo(index) {
+      if (index < 0 || index >= total || index === current) return;
+      slides[current].classList.remove('active');
+      slides[current].classList.add('exit');
+      setTimeout(() => slides[current === index ? current : (current)].classList.remove('exit'), 600);
+
+      current = index;
+      slides[current].classList.add('active');
+
+      // Update UI
+      progressBar.style.width = ((current + 1) / total * 100) + '%';
+      counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+
+      // Update dots
+      document.querySelectorAll('.nav-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); next(); }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+    });
+
+    // Click navigation
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.nav-dots') || e.target.closest('a')) return;
+      const x = e.clientX / window.innerWidth;
+      x > 0.5 ? next() : prev();
+    });
+
+    // Touch/swipe
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', (e) => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) { diff > 0 ? next() : prev(); }
+    });
+  </script>
+</body>
+</html>

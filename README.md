@@ -10,3 +10,6 @@ Direct deck page:
 
 Secondary deck:
 - `pos-presentation.html`
+
+FastData / E100 deck:
+- `fastdata-ae100.html`
