@@ -6,33 +6,21 @@
 <title>Second Brain for Business — для 1Бит</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* ---- Editable design tokens ---- */
-  --bg:#eef1f6;
-  --bg-2:#f7f9fc;
-  --paper:#ffffff;
-  --glass:rgba(255,255,255,.62);
-  --glass-strong:rgba(255,255,255,.82);
-  --ink:#121620;
-  --ink-soft:#2b3140;
-  --muted:#616a7d;
-  --faint:#9aa2b3;
-  --line:rgba(18,22,32,.10);
-  --line-soft:rgba(18,22,32,.06);
-  --accent:#4f46e5;        /* AI / memory layer */
-  --accent-2:#e11d48;      /* 1Бит акцент */
-  --accent-3:#0ea5a4;      /* agents / actions */
-  --accent-soft:rgba(79,70,229,.10);
-  --accent2-soft:rgba(225,29,72,.09);
-  --accent3-soft:rgba(14,165,164,.10);
-  --green:#0ca678;
-  --amber:#e8590c;
-  --shadow:0 1px 2px rgba(16,20,30,.05), 0 8px 24px rgba(16,20,30,.06);
-  --shadow-lg:0 20px 60px rgba(30,34,60,.14);
-  --radius:18px;
-  --radius-sm:12px;
+  --bg:#eef1f7; --bg-2:#f8fafc; --paper:#ffffff;
+  --glass:rgba(255,255,255,.58); --glass-strong:rgba(255,255,255,.8);
+  --ink:#0e1220; --ink-soft:#333a4d; --muted:#5c6478; --faint:#98a0b3;
+  --line:rgba(14,18,32,.09); --line-soft:rgba(14,18,32,.05);
+  --accent:#4f46e5; --accent-2:#e11d48; --accent-3:#0ea5a4;
+  --accent-soft:rgba(79,70,229,.10); --accent2-soft:rgba(225,29,72,.09); --accent3-soft:rgba(14,165,164,.10);
+  --grad:linear-gradient(115deg,#4f46e5 0%,#7c3aed 40%,#0ea5a4 100%);
+  --grad-2:linear-gradient(115deg,#e11d48,#7c3aed);
+  --green:#0ca678; --amber:#e8590c;
+  --shadow:0 1px 2px rgba(16,20,30,.04), 0 10px 30px rgba(16,20,30,.06);
+  --shadow-lg:0 30px 80px rgba(30,34,70,.16);
+  --radius:20px; --radius-sm:13px;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --display:"Space Grotesk","Inter",sans-serif;
@@ -40,528 +28,470 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
-  font-family:var(--sans);color:var(--ink);
-  background:
-    radial-gradient(1200px 700px at 78% -10%, rgba(79,70,229,.10), transparent 60%),
-    radial-gradient(1000px 640px at -8% 108%, rgba(14,165,164,.10), transparent 60%),
-    radial-gradient(900px 600px at 110% 120%, rgba(225,29,72,.06), transparent 55%),
-    linear-gradient(180deg,var(--bg-2),var(--bg));
-  overflow:hidden;-webkit-font-smoothing:antialiased;
+  font-family:var(--sans);color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;
+  background:var(--bg);
 }
+/* animated aurora backdrop */
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora::before,.aurora::after{content:"";position:absolute;width:65vw;height:65vw;border-radius:50%;filter:blur(80px);opacity:.5}
+.aurora::before{background:radial-gradient(circle,rgba(79,70,229,.5),transparent 60%);top:-22vw;right:-15vw;animation:drift1 22s ease-in-out infinite alternate}
+.aurora::after{background:radial-gradient(circle,rgba(14,165,164,.45),transparent 60%);bottom:-25vw;left:-15vw;animation:drift2 26s ease-in-out infinite alternate}
+.aurora i{position:absolute;width:42vw;height:42vw;border-radius:50%;filter:blur(80px);opacity:.32;background:radial-gradient(circle,rgba(225,29,72,.4),transparent 60%);top:38%;left:52%;animation:drift3 30s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(-6vw,8vh) scale(1.15)}}
+@keyframes drift2{to{transform:translate(7vw,-6vh) scale(1.2)}}
+@keyframes drift3{to{transform:translate(-9vw,-7vh) scale(1.1)}}
 
-/* ---------- Deck mechanics ---------- */
-.deck{position:relative;height:100vh;width:100vw;overflow:hidden}
-.track{display:flex;height:100%;transition:transform .62s cubic-bezier(.7,.02,.2,1)}
-.slide{
-  position:relative;flex:0 0 100vw;height:100vh;
-  padding:clamp(28px,4.4vh,60px) clamp(30px,6vw,110px);
-  display:flex;flex-direction:column;justify-content:center;gap:22px;overflow:hidden;
-}
-.slide-inner{width:100%;max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(14px,2.4vh,26px)}
+.deck{position:relative;height:100vh;width:100vw;overflow:hidden;z-index:1}
+.track{display:flex;height:100%;transition:transform .7s cubic-bezier(.76,0,.16,1)}
+.slide{position:relative;flex:0 0 100vw;height:100vh;padding:clamp(30px,5vh,72px) clamp(32px,7vw,130px);
+  display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.slide-inner{width:100%;max-width:1260px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.6vh,30px)}
 
-/* faint grid texture */
-.slide::before{
-  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);
-  background-size:52px 52px;-webkit-mask-image:radial-gradient(120% 90% at 50% 30%,#000 40%,transparent 78%);
-          mask-image:radial-gradient(120% 90% at 50% 30%,#000 40%,transparent 78%);opacity:.6;
-}
-.slide>*{position:relative;z-index:1}
+/* reveal */
+.rise{opacity:0;transform:translateY(30px);filter:blur(6px);
+  transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1),filter .7s}
+.slide.is-active .rise{opacity:1;transform:none;filter:none}
 
-/* ---------- Typography ---------- */
-.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12px;font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);}
+/* typography */
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
 .eyebrow.c2{color:var(--accent-2)} .eyebrow.c3{color:var(--accent-3)}
-.eyebrow::before{content:"";width:22px;height:2px;border-radius:2px;background:currentColor;opacity:.65}
-h1.title{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.03;
-  font-size:clamp(30px,5.2vw,64px);margin:0}
-h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.015em;line-height:1.06;
-  font-size:clamp(26px,3.7vw,44px);margin:0}
-.lead{font-size:clamp(15px,1.5vw,19px);line-height:1.55;color:var(--muted);max-width:70ch}
-.mark{color:var(--accent);font-weight:600}
-.mark2{color:var(--accent-2);font-weight:600}
-.mark3{color:var(--accent-3);font-weight:600}
-strong{color:var(--ink-soft)}
+.eyebrow::before{content:"";width:26px;height:2px;border-radius:2px;background:currentColor}
+h1.title{font-family:var(--display);font-weight:700;letter-spacing:-.025em;line-height:.98;
+  font-size:clamp(40px,7.4vw,104px);margin:0}
+h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.02;
+  font-size:clamp(30px,5vw,60px);margin:0}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:var(--grad-2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(16px,1.7vw,22px);line-height:1.5;color:var(--muted);max-width:60ch;font-weight:400}
+.lead b,.lead strong{color:var(--ink-soft);font-weight:600}
+.kicker{font-size:clamp(18px,2vw,26px);font-weight:600;color:var(--ink-soft);line-height:1.35;max-width:24ch}
 
-/* ---------- Cards / grids ---------- */
-.grid{display:grid;gap:16px}
-.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.card{
-  background:var(--glass);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);
-  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
-  padding:18px 20px;display:flex;flex-direction:column;gap:9px;
-}
-.card.pad-lg{padding:22px 24px}
-.card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
-.card p{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
-.card .num{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--faint)}
-.chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-soft);
-  background:var(--glass-strong);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+/* hero numbers */
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .v{font-family:var(--display);font-weight:700;letter-spacing:-.03em;line-height:.92;
+  font-size:clamp(40px,6vw,84px)}
+.stat .l{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+
+/* grids & glass */
+.grid{display:grid;gap:clamp(12px,1.4vw,18px)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(18px,1.6vw,26px);
+  display:flex;flex-direction:column;gap:10px;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(79,70,229,.28)}
+.card h3{margin:0;font-size:clamp(16px,1.5vw,20px);font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:clamp(13px,1.05vw,15px);line-height:1.45;color:var(--muted)}
+.card .big{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1}
+.ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none;font-family:var(--display);
+  font-weight:700;font-size:16px;color:#fff}
+.ic.a{background:linear-gradient(135deg,#6366f1,#4f46e5)} .ic.b{background:linear-gradient(135deg,#f43f5e,#e11d48)} .ic.c{background:linear-gradient(135deg,#14b8a6,#0ea5a4)}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-soft);
+  background:var(--glass-strong);border:1px solid var(--line);border-radius:999px;padding:8px 15px;box-shadow:var(--shadow)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
 .dot.c2{background:var(--accent-2)} .dot.c3{background:var(--accent-3)} .dot.g{background:var(--green)}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px}
 
-.ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;
-  font-family:var(--mono);font-weight:600;font-size:13px;border:1px solid var(--line)}
-.ico.a{background:var(--accent-soft);color:var(--accent)}
-.ico.b{background:var(--accent2-soft);color:var(--accent-2)}
-.ico.c{background:var(--accent3-soft);color:var(--accent-3)}
-.card-head{display:flex;align-items:center;gap:12px}
+/* big word trio */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px)}
+.word{position:relative;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(22px,2.4vw,34px);
+  background:var(--glass);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;gap:12px;min-height:230px;justify-content:space-between}
+.word::after{content:"";position:absolute;inset:0;background:var(--grad);opacity:.05}
+.word .n{font-family:var(--mono);font-size:13px;color:var(--faint);font-weight:600}
+.word .t{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1}
+.word .d{font-size:clamp(13px,1.1vw,15.5px);color:var(--muted);line-height:1.45}
 
-/* metric */
-.metric{display:flex;flex-direction:column;gap:4px}
-.metric .v{font-family:var(--mono);font-weight:600;font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;line-height:1}
-.metric .l{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
-.metric .s{font-size:12.5px;color:var(--muted)}
+/* flow diagram */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:clamp(6px,.8vw,12px)}
+.flow-col{display:flex;flex-direction:column;gap:9px}
+.flow-node{background:var(--glass-strong);border:1px solid var(--line);border-radius:13px;padding:12px 14px;
+  font-size:13px;font-weight:600;box-shadow:var(--shadow);display:flex;align-items:center;gap:9px}
+.flow-node small{display:block;font-weight:500;color:var(--faint);font-size:11px;margin-top:1px}
+.flow-node.hi{border-color:rgba(79,70,229,.4);background:linear-gradient(180deg,#fff,rgba(79,70,229,.05))}
+.flow-node.hr{border-color:rgba(225,29,72,.35);background:linear-gradient(180deg,#fff,rgba(225,29,72,.04))}
+.flow-arrow{color:var(--faint);font-size:22px;text-align:center}
+.flow-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:2px}
 
-/* ---------- Nav / chrome ---------- */
-.chrome{position:fixed;z-index:40;inset:auto 0 0 0;pointer-events:none}
-.counter{position:fixed;top:22px;left:clamp(24px,6vw,110px);z-index:40;font-family:var(--mono);font-size:12px;
-  letter-spacing:.1em;color:var(--muted);display:flex;align-items:center;gap:8px}
-.counter b{color:var(--ink)}
-.brandtag{position:fixed;top:20px;right:clamp(24px,6vw,110px);z-index:40;display:flex;align-items:center;gap:10px;
-  font-size:12px;font-weight:600;color:var(--muted)}
-.brandtag .logo{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent-3));
-  display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:13px}
-.progress{position:fixed;top:0;left:0;height:3px;z-index:41;background:linear-gradient(90deg,var(--accent),var(--accent-3));
-  width:0;transition:width .5s cubic-bezier(.7,.02,.2,1);box-shadow:0 0 12px rgba(79,70,229,.4)}
-.arrows{position:fixed;bottom:22px;right:clamp(24px,6vw,110px);z-index:42;display:flex;gap:10px;pointer-events:auto}
-.arrow{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--glass-strong);
-  backdrop-filter:blur(14px);color:var(--ink);font-size:18px;cursor:pointer;display:grid;place-items:center;
-  box-shadow:var(--shadow);transition:.16s}
-.arrow:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
-.arrow:active{transform:translateY(0)}
-.dots{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:42;display:flex;gap:7px;pointer-events:auto}
-.dnav{width:7px;height:7px;border-radius:50%;background:var(--faint);opacity:.5;cursor:pointer;transition:.2s;border:none;padding:0}
-.dnav.on{opacity:1;background:var(--accent);width:22px;border-radius:4px}
-.hint{position:fixed;bottom:24px;left:clamp(24px,6vw,110px);z-index:40;font-size:11px;color:var(--faint);font-family:var(--mono)}
+/* timeline weeks */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
+.week{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,1.5vw,22px);box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.week::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad)}
+.week .wk{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
+.week h4{margin:0;font-size:clamp(15px,1.4vw,19px);font-weight:700}
+.week ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--muted);line-height:1.5}
 
-/* ---------- Diagram bits ---------- */
-.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:10px}
-.flow-col{display:flex;flex-direction:column;gap:8px}
-.flow-node{background:var(--glass-strong);border:1px solid var(--line);border-radius:12px;padding:11px 13px;
-  font-size:12.5px;font-weight:600;box-shadow:var(--shadow);display:flex;align-items:center;gap:9px}
-.flow-node small{display:block;font-weight:500;color:var(--faint);font-size:10.5px;margin-top:1px}
-.flow-arrow{color:var(--faint);font-size:18px;text-align:center}
-.flow-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:4px}
+.split{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(24px,3.4vw,56px);align-items:center}
+.split.rev{grid-template-columns:.98fr 1.02fr}
+.imgframe{border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow-lg);overflow:hidden;position:relative;background:var(--paper)}
+.imgframe .cap{position:absolute;left:14px;bottom:14px;background:var(--glass-strong);backdrop-filter:blur(12px);
+  border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
 
-.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.week{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);
-  display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
-.week::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-3))}
-.week .wk{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600}
-.week h4{margin:0;font-size:14.5px;font-weight:700}
-.week ul{margin:0;padding-left:16px;font-size:12px;color:var(--muted);line-height:1.5}
+ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(10px,1.4vh,16px)}
+ul.clean li{display:flex;gap:14px;align-items:baseline;font-size:clamp(16px,1.7vw,22px);line-height:1.3;color:var(--ink-soft);font-weight:500}
+ul.clean li b{font-weight:700;color:var(--ink)}
+ul.clean li::before{content:counter(li,decimal-leading-zero);counter-increment:li;font-family:var(--mono);font-size:13px;
+  color:var(--accent);font-weight:700;flex:none;position:relative;top:-2px}
+ul.clean{counter-reset:li}
 
-ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-ul.clean li{display:flex;gap:11px;font-size:14px;line-height:1.45;color:var(--ink-soft)}
-ul.clean li::before{content:"→";color:var(--accent);font-weight:700;flex:none}
-ul.clean.c2 li::before{color:var(--accent-2)} ul.clean.c3 li::before{color:var(--accent-3)}
+.pill{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px}
+.pill.ok{color:var(--green);background:rgba(12,166,120,.1)} .pill.warn{color:var(--amber);background:rgba(232,89,12,.1)} .pill.run{color:var(--accent);background:var(--accent-soft)}
 
-.split{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,3vw,44px);align-items:center}
-.split.rev{grid-template-columns:.95fr 1.05fr}
-.imgframe{border-radius:var(--radius);border:1px solid var(--line);background:var(--paper);box-shadow:var(--shadow-lg);
-  overflow:hidden;position:relative}
-.imgframe .cap{position:absolute;left:12px;bottom:12px;background:var(--glass-strong);backdrop-filter:blur(10px);
-  border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:600;color:var(--ink-soft)}
-.imgframe img{width:100%;display:block}
-.note{font-size:11.5px;color:var(--faint);font-family:var(--mono)}
-
-.badge-row{display:flex;flex-wrap:wrap;gap:8px}
-.kpi{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;
-  background:var(--glass);box-shadow:var(--shadow)}
-.kpi .k{font-size:12.5px;font-weight:700;color:var(--ink)}
-.kpi .m{font-size:12px;color:var(--muted);line-height:1.4}
-.kpi .t{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600}
-
-.price{display:flex;flex-direction:column;gap:10px;padding:20px;border:1px solid var(--line);border-radius:var(--radius);
-  background:var(--glass);box-shadow:var(--shadow);position:relative}
-.price.feat{border-color:rgba(79,70,229,.4);box-shadow:0 18px 44px rgba(79,70,229,.14)}
+.price{display:flex;flex-direction:column;gap:9px;padding:clamp(16px,1.6vw,24px);border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--glass);box-shadow:var(--shadow);position:relative;transition:transform .3s,box-shadow .3s}
+.price:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.price.feat{border-color:rgba(79,70,229,.4);background:linear-gradient(180deg,rgba(79,70,229,.06),var(--glass))}
 .price .tier{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.price h3{margin:0;font-size:19px;font-weight:700}
-.price .p{font-family:var(--display);font-size:15px;font-weight:600;color:var(--ink-soft)}
-.price ul{margin:2px 0 0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.price h3{margin:0;font-family:var(--display);font-size:clamp(19px,1.9vw,24px);font-weight:700}
+.price .p{font-size:13.5px;font-weight:600;color:var(--muted)}
+.price ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
 .price ul li{font-size:12.5px;color:var(--muted);display:flex;gap:8px}
 .price ul li::before{content:"✓";color:var(--accent-3);font-weight:700}
-.tag-feat{position:absolute;top:-10px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;
-  letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.tag-feat{position:absolute;top:-11px;right:18px;background:var(--grad);color:#fff;font-size:10px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;box-shadow:0 6px 16px rgba(79,70,229,.35)}
 
-.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:6px;
-  border-top:1px solid var(--line);padding-top:14px;font-size:12px;color:var(--faint)}
-
-.disclaimer{background:var(--accent2-soft);border:1px solid rgba(225,29,72,.22);border-radius:12px;padding:12px 16px;
-  font-size:13px;color:#9f1239;display:flex;gap:10px;align-items:flex-start}
+.note{font-size:12px;color:var(--faint);font-family:var(--mono)}
+.disclaimer{background:var(--accent2-soft);border:1px solid rgba(225,29,72,.2);border-radius:14px;padding:14px 18px;
+  font-size:14px;color:#9f1239;display:flex;gap:11px;align-items:flex-start;line-height:1.45}
 .disclaimer b{color:#881337}
 
-/* cover */
-.cover-badges{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
-.cover-flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px}
-.cf{background:var(--glass-strong);border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:12.5px;
+/* cover flow */
+.cover-flow{display:flex;flex-wrap:wrap;align-items:center;gap:11px}
+.cf{background:var(--glass-strong);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13.5px;
   font-weight:600;box-shadow:var(--shadow)}
-.cf.hi{background:linear-gradient(135deg,var(--accent),var(--accent-3));color:#fff;border:none}
-.cf-sep{color:var(--faint);font-size:16px}
+.cf.hi{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 26px rgba(79,70,229,.32)}
+.cf-sep{color:var(--faint);font-size:18px}
 
-@media (max-width:820px){
-  .g4{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:1fr}
-  .split,.split.rev{grid-template-columns:1fr} .flow{grid-template-columns:1fr}
-  .flow-arrow{transform:rotate(90deg)} .timeline{grid-template-columns:1fr 1fr}
+/* chrome */
+.counter{position:fixed;top:26px;left:clamp(28px,7vw,130px);z-index:40;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.counter b{color:var(--ink)}
+.brandtag{position:fixed;top:24px;right:clamp(28px,7vw,130px);z-index:40;display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.brandtag .logo{width:26px;height:26px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:13px;box-shadow:0 6px 16px rgba(79,70,229,.35)}
+.progress{position:fixed;top:0;left:0;height:3px;z-index:41;background:var(--grad);width:0;transition:width .6s cubic-bezier(.76,0,.16,1);box-shadow:0 0 14px rgba(79,70,229,.5)}
+.arrows{position:fixed;bottom:26px;right:clamp(28px,7vw,130px);z-index:42;display:flex;gap:10px}
+.arrow{width:46px;height:46px;border-radius:13px;border:1px solid var(--line);background:var(--glass-strong);backdrop-filter:blur(14px);
+  color:var(--ink);font-size:19px;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow);transition:.16s}
+.arrow:hover{color:#fff;background:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+.dots{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);z-index:42;display:flex;gap:7px}
+.dnav{width:7px;height:7px;border-radius:50%;background:var(--faint);opacity:.45;cursor:pointer;transition:.25s;border:none;padding:0}
+.dnav.on{opacity:1;background:var(--accent);width:24px;border-radius:4px}
+.hint{position:fixed;bottom:28px;left:clamp(28px,7vw,130px);z-index:40;font-size:11px;color:var(--faint);font-family:var(--mono)}
+
+@media (max-width:860px){
+  .g4,.g3,.trio{grid-template-columns:1fr 1fr} .split,.split.rev{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg)}.timeline{grid-template-columns:1fr 1fr}
 }
-@media print{
-  body{overflow:visible;height:auto} .deck,.track{height:auto;display:block;transition:none;transform:none!important}
-  .slide{height:100vh;page-break-after:always;transform:none!important}
-  .chrome,.arrows,.dots,.hint,.progress,.counter,.brandtag{display:none!important}
-}
+@media print{body,.deck,.track{height:auto;overflow:visible;display:block;transform:none!important}
+  .slide{height:100vh;page-break-after:always}.rise{opacity:1!important;transform:none!important;filter:none!important}
+  .aurora,.arrows,.dots,.hint,.progress,.counter,.brandtag{display:none!important}}
 </style>
 </head>
 <body>
+<div class="aurora"><i></i></div>
 <div class="progress" id="progress"></div>
 <div class="counter"><b id="cur">01</b> / <span id="total">14</span></div>
 <div class="brandtag"><span class="logo">S²</span> Second Brain for Business · <b style="color:var(--accent-2)">1Бит</b></div>
 
-<div class="deck">
-<div class="track" id="track">
+<div class="deck"><div class="track" id="track">
 
-<!-- ============ 01 · COVER ============ -->
+<!-- 01 COVER -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c2">Коммерческое предложение · продуктовый концепт</span>
-    <h1 class="title">Second&nbsp;Brain<br>for&nbsp;Business</h1>
-    <p class="lead">AI-слой <span class="mark">памяти</span>, <span class="mark3">контекста</span> и <span class="mark2">агентных действий</span> поверх текущих решений 1Бит — 1С, ERP, CRM, BI, ЭДО, интеграций и поддержки. Не новая система, а единый мозг над теми, что уже внедрены.</p>
-    <div class="cover-flow">
-      <span class="cf">1С / ERP</span><span class="cf">CRM</span><span class="cf">BI</span><span class="cf">ЭДО</span><span class="cf">чаты · документы</span>
-      <span class="cf-sep">→</span>
-      <span class="cf hi">Memory&nbsp;Layer</span>
-      <span class="cf-sep">→</span>
-      <span class="cf hi">Agents</span>
+    <span class="eyebrow c2 rise">Продуктовый концепт для 1Бит</span>
+    <h1 class="title rise">Second Brain<br><span class="grad">for Business</span></h1>
+    <p class="lead rise" style="font-size:clamp(18px,2vw,26px);max-width:44ch">AI-мозг поверх ваших систем: <b>память</b>, <b>контекст</b> и <b>действия</b> — над 1С, CRM, BI и ЭДО.</p>
+    <div class="cover-flow rise">
+      <span class="cf">1С · CRM · BI · ЭДО</span><span class="cf-sep">→</span>
+      <span class="cf hi">Memory Layer</span><span class="cf-sep">→</span><span class="cf hi">Agents</span>
     </div>
-    <div class="cover-badges">
-      <span class="chip"><span class="dot"></span>Рабочий прототип: Jarvis + Obsidian</span>
-      <span class="chip"><span class="dot c3"></span>1&nbsp;267 файлов · 12&nbsp;755 смысловых фрагментов</span>
-      <span class="chip"><span class="dot c2"></span>Агент с 14 инструментами в проде</span>
+    <div class="badge-row rise" style="margin-top:6px">
+      <span class="chip"><span class="dot"></span>Рабочий прототип, не слайды</span>
+      <span class="chip"><span class="dot c3"></span>12 755 фрагментов памяти</span>
+      <span class="chip"><span class="dot c2"></span>14 инструментов агента в проде</span>
     </div>
-    <div class="foot"><span>Подготовлено для команды 1Бит</span><span class="note">↔ / ␣ — листать · P — печать в PDF</span></div>
   </div>
 </section>
 
-<!-- ============ 02 · PROBLEM ============ -->
+<!-- 02 PROBLEM -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c2">Проблема</span>
-    <h2 class="head">У компаний есть системы,<br>но нет общей памяти</h2>
-    <p class="lead">Данные внедрены и работают. Но каждый контур хранит свой кусок правды, а связь между ними живёт в головах сотрудников и переписке. Контекст не собирается сам — его каждый раз собирают вручную.</p>
-    <div class="grid g4">
-      <div class="card"><div class="card-head"><span class="ico a">1С</span><h3>Разрозненные хранилища</h3></div><p>1С, CRM, BI, ЭДО, диски — рядом, но не связаны. Один клиент = 5 разных представлений.</p></div>
-      <div class="card"><div class="card-head"><span class="ico b">?</span><h3>Знание в головах</h3></div><p>«Спроси Марину» вместо запроса к системе. Уходит человек — уходит контекст.</p></div>
-      <div class="card"><div class="card-head"><span class="ico c">⏱</span><h3>Ручной сбор контекста</h3></div><p>Перед каждым решением — 20 минут по вкладкам и чатам, чтобы восстановить картину.</p></div>
-      <div class="card"><div class="card-head"><span class="ico a">↺</span><h3>Долгий онбординг</h3></div><p>Новый сотрудник месяцами собирает то, что уже есть в системах, но не читаемо.</p></div>
+    <span class="eyebrow c2 rise">Проблема</span>
+    <h2 class="head rise">Системы есть.<br><span class="grad2">Общей памяти — нет.</span></h2>
+    <p class="lead rise">Данные внедрены и работают. Но контекст каждый раз собирают вручную — по вкладкам, чатам и головам сотрудников.</p>
+    <div class="grid g4 rise">
+      <div class="card"><span class="ic a">⧉</span><h3>Разрозненно</h3><p>Один клиент — пять разных представлений.</p></div>
+      <div class="card"><span class="ic b">?</span><h3>В головах</h3><p>«Спроси Марину» вместо запроса к системе.</p></div>
+      <div class="card"><span class="ic c">⏱</span><h3>Вручную</h3><p>20 минут на сбор картинки перед решением.</p></div>
+      <div class="card"><span class="ic a">↻</span><h3>Медленно</h3><p>Онбординг — месяцами по тем же данным.</p></div>
     </div>
-    <p class="lead" style="margin-top:2px">Итог: данные есть, а <strong>единой памяти и мгновенного контекста — нет</strong>. Это не проблема внедрения. Это отсутствующий слой поверх внедрений.</p>
   </div>
 </section>
 
-<!-- ============ 03 · WHY 1BIT ============ -->
+<!-- 03 WHY 1BIT -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow">Почему это подходит именно 1Бит</span>
-    <h2 class="head">Вы уже владеете данными клиента.<br>Осталось надстроить над ними мозг.</h2>
-    <div class="split">
-      <ul class="clean">
-        <li><strong>Слой, а не замена.</strong> Second Brain ставится поверх 1С / CRM / BI / ЭДО — ничего не нужно вырывать и перевнедрять.</li>
-        <li><strong>Готовая клиентская база.</strong> Продаётся апселлом к тем, кому вы уже внедрили и кого поддерживаете.</li>
-        <li><strong>Ваши компетенции = входной билет.</strong> Интеграции, документооборот, поддержка — ровно то, из чего собирается слой памяти.</li>
-        <li><strong>Recurring-выручка.</strong> Setup + подписка + сопровождение агентов вместо разовых проектов.</li>
-        <li><strong>Стратегический ров.</strong> Кто держит память компании, того сложнее заменить.</li>
+    <span class="eyebrow rise">Почему 1Бит</span>
+    <h2 class="head rise">Вы уже владеете данными.<br>Осталось <span class="grad">надстроить мозг.</span></h2>
+    <div class="split" style="margin-top:6px">
+      <ul class="clean rise">
+        <li><b>Слой, а не замена</b> — поверх 1С / CRM / BI / ЭДО, без перевнедрения.</li>
+        <li><b>Апселл к своей базе</b> — тем, кому уже внедрили и кого ведёте.</li>
+        <li><b>Recurring-выручка</b> — setup + подписка вместо разовых проектов.</li>
+        <li><b>Стратегический ров</b> — кто держит память компании, того не заменить.</li>
       </ul>
-      <div class="grid" style="gap:12px">
-        <div class="card pad-lg"><div class="metric"><span class="l">Позиционирование</span><span class="v" style="font-size:22px;color:var(--accent)">AI-слой над вашим стеком</span><span class="s">не конкурирует с 1С — усиливает его</span></div></div>
-        <div class="grid g2" style="gap:12px">
-          <div class="card"><div class="metric"><span class="l">Модель</span><span class="v" style="font-size:19px">Upsell</span><span class="s">к текущим клиентам</span></div></div>
-          <div class="card"><div class="metric"><span class="l">Выручка</span><span class="v" style="font-size:19px">Recurring</span><span class="s">setup + подписка</span></div></div>
+      <div class="grid rise" style="gap:16px">
+        <div class="card"><span class="note">Позиционирование</span><span class="big grad">AI-слой над вашим стеком</span><p>Не конкурирует с 1С — усиливает его.</p></div>
+        <div class="grid g2" style="gap:16px">
+          <div class="card"><span class="big">Upsell</span><span class="note">к текущим клиентам</span></div>
+          <div class="card"><span class="big">Recurring</span><span class="note">setup + подписка</span></div>
         </div>
-        <div class="card"><p style="color:var(--ink-soft)">1Бит уже собирает данные в системы. Second Brain делает эти данные <span class="mark">спрашиваемыми и действующими</span> — это следующий логичный продукт линейки.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 04 · WHAT IS IT ============ -->
+<!-- 04 WHAT IS IT -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow">Что такое Second Brain for Business</span>
-    <h2 class="head">Единый слой памяти, контекста<br>и действий поверх ваших систем</h2>
-    <p class="lead">Три способности, которых нет ни у одной отдельной системы клиента — и которые появляются, когда над ними ставится общий слой.</p>
-    <div class="grid g3">
-      <div class="card pad-lg"><div class="card-head"><span class="ico a">M</span><h3>Память</h3></div>
-        <p>Всё, что компания уже накопила — заявки, сделки, документы, переписка — собирается в единое индексируемое хранилище. Ничто не теряется.</p>
-        <span class="chip" style="align-self:flex-start"><span class="dot"></span>Единый источник правды</span></div>
-      <div class="card pad-lg"><div class="card-head"><span class="ico c">C</span><h3>Контекст</h3></div>
-        <p>Данные связываются в граф: клиент ↔ сделка ↔ документ ↔ ответственный ↔ история. Ответ приходит со связями и ссылкой на источник.</p>
-        <span class="chip" style="align-self:flex-start"><span class="dot c3"></span>Граф связей + семантика</span></div>
-      <div class="card pad-lg"><div class="card-head"><span class="ico b">A</span><h3>Действия</h3></div>
-        <p>Агенты не только отвечают, но и выполняют: находят, сверяют, готовят, ставят задачи — безопасные сразу, необратимые через подтверждение.</p>
-        <span class="chip" style="align-self:flex-start"><span class="dot c2"></span>Агенты с confirm-gate</span></div>
+    <span class="eyebrow rise">Что это</span>
+    <h2 class="head rise">Три способности, <span class="grad">которых нет</span><br>ни у одной системы по отдельности</h2>
+    <div class="trio rise" style="margin-top:6px">
+      <div class="word"><div><span class="n">01</span><div class="t">Память</div></div><div class="d">Заявки, сделки, документы, переписка — в едином индексе. Ничего не теряется.</div></div>
+      <div class="word"><div><span class="n">02</span><div class="t">Контекст</div></div><div class="d">Граф связей: клиент ↔ сделка ↔ документ ↔ ответственный. Ответ — со ссылкой на источник.</div></div>
+      <div class="word"><div><span class="n">03</span><div class="t">Действия</div></div><div class="d">Агенты не только отвечают, но и делают. Необратимое — через подтверждение.</div></div>
     </div>
-    <p class="lead" style="margin-top:2px"><strong>Что это не есть:</strong> не новая ERP, не замена 1С, не «ещё один портал». Это тонкий слой поверх того, что уже внедрено 1Бит.</p>
+    <p class="lead rise" style="font-size:16px">Не новая ERP, не замена 1С — <b>тонкий слой поверх внедрённого.</b></p>
   </div>
 </section>
 
-<!-- ============ 05 · ARCHITECTURE ============ -->
+<!-- 05 ARCHITECTURE -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c3">Архитектура</span>
-    <h2 class="head">Источники → слой памяти → агенты</h2>
-    <div class="flow">
+    <span class="eyebrow c3 rise">Архитектура</span>
+    <h2 class="head rise">Источники → <span class="grad">память</span> → агенты</h2>
+    <div class="flow rise" style="margin-top:6px">
       <div class="flow-col">
         <div class="flow-label">Источники</div>
-        <div class="flow-node"><span class="dot"></span>1С / ERP <small>операции, справочники</small></div>
-        <div class="flow-node"><span class="dot"></span>CRM <small>клиенты, сделки</small></div>
-        <div class="flow-node"><span class="dot"></span>BI <small>показатели</small></div>
-        <div class="flow-node"><span class="dot"></span>ЭДО <small>документы</small></div>
-        <div class="flow-node"><span class="dot"></span>Чаты · файлы <small>переписка, диски</small></div>
+        <div class="flow-node"><span class="dot"></span>1С / ERP</div>
+        <div class="flow-node"><span class="dot"></span>CRM</div>
+        <div class="flow-node"><span class="dot"></span>BI</div>
+        <div class="flow-node"><span class="dot"></span>ЭДО · чаты · файлы</div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
         <div class="flow-label">Сбор</div>
         <div class="flow-node"><span class="dot c3"></span>Коннекторы <small>интеграции 1Бит</small></div>
         <div class="flow-node"><span class="dot c3"></span>Нормализация <small>единая схема</small></div>
-        <div class="flow-node"><span class="dot c3"></span>Права доступа <small>наследуются</small></div>
+        <div class="flow-node"><span class="dot c3"></span>Права <small>наследуются</small></div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
         <div class="flow-label">Слой памяти</div>
-        <div class="flow-node" style="border-color:rgba(79,70,229,.4)"><span class="dot"></span>Граф знаний <small>связи сущностей</small></div>
-        <div class="flow-node" style="border-color:rgba(79,70,229,.4)"><span class="dot"></span>Семантический индекс <small>поиск по смыслу</small></div>
-        <div class="flow-node" style="border-color:rgba(79,70,229,.4)"><span class="dot"></span>Ответ + источник <small>всегда со ссылкой</small></div>
+        <div class="flow-node hi"><span class="dot"></span>Граф знаний</div>
+        <div class="flow-node hi"><span class="dot"></span>Семантический индекс</div>
+        <div class="flow-node hi"><span class="dot"></span>Ответ + источник</div>
       </div>
       <div class="flow-arrow">→</div>
       <div class="flow-col">
-        <div class="flow-label">Агенты · поверхности</div>
-        <div class="flow-node" style="border-color:rgba(225,29,72,.35)"><span class="dot c2"></span>Retrieval-агент <small>отвечает с контекстом</small></div>
-        <div class="flow-node" style="border-color:rgba(225,29,72,.35)"><span class="dot c2"></span>Action-агент <small>confirm-gate</small></div>
-        <div class="flow-node"><span class="dot"></span>Чат · Telegram · кокпит <small>там, где работают</small></div>
+        <div class="flow-label">Агенты</div>
+        <div class="flow-node hr"><span class="dot c2"></span>Retrieval <small>ответ с контекстом</small></div>
+        <div class="flow-node hr"><span class="dot c2"></span>Action <small>confirm-gate</small></div>
+        <div class="flow-node"><span class="dot"></span>Чат · Telegram · кокпит</div>
       </div>
     </div>
-    <div class="badge-row" style="margin-top:6px">
-      <span class="chip"><span class="dot g"></span>Права доступа исходных систем сохраняются</span>
-      <span class="chip"><span class="dot g"></span>Каждый ответ — со ссылкой на источник</span>
-      <span class="chip"><span class="dot g"></span>Необратимые действия — только через подтверждение</span>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot g"></span>Права исходных систем сохраняются</span>
+      <span class="chip"><span class="dot g"></span>Каждый ответ — со ссылкой</span>
+      <span class="chip"><span class="dot g"></span>Необратимое — через подтверждение</span>
     </div>
   </div>
 </section>
 
-<!-- ============ 06 · PROOF · OBSIDIAN GRAPH ============ -->
+<!-- 06 PROOF GRAPH -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow">Мой proof · слой памяти уже построен</span>
-    <h2 class="head">Obsidian как живая карта контекста</h2>
-    <div class="split">
-      <div class="imgframe">
-        <!-- CSS-кадрирование: object-position:bottom срезает верхнюю рамку окна (~300px). Правьте aspect-ratio, чтобы менять обрезку. -->
+    <span class="eyebrow rise">Proof · слой памяти уже построен</span>
+    <div class="split" style="margin-top:2px">
+      <div class="imgframe rise">
         <div style="width:100%;aspect-ratio:2330/1546;overflow:hidden;background:linear-gradient(180deg,#fbfcff,#f1f3f9)">
-          <img src="assets/obsidian-graph.png" alt="Obsidian Graph View — карта контекста"
-               style="width:100%;height:100%;object-fit:cover;object-position:50% 100%;display:block"
+          <img src="assets/obsidian-graph.png" alt="Obsidian Graph View" style="width:100%;height:100%;object-fit:cover;object-position:50% 100%;display:block"
                onerror="this.style.display='none';this.parentElement.nextElementSibling.style.display='flex'">
         </div>
-        <div style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-                    aspect-ratio:16/11;background:linear-gradient(180deg,#fbfcff,#eef1f8);text-align:center;padding:24px">
-          <div style="font-size:28px">🧠</div>
-          <div style="font-weight:700;font-size:15px;color:var(--ink-soft)">Скрин Obsidian Graph View</div>
-          <div style="font-size:12px;color:var(--faint);font-family:var(--mono)">положите файл → assets/obsidian-graph.png</div>
+        <div style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:16/11;background:linear-gradient(180deg,#fbfcff,#eef1f8);text-align:center;padding:24px">
+          <div style="font-size:30px">🧠</div><div style="font-weight:700">Obsidian Graph View</div>
+          <div class="note">assets/obsidian-graph.png</div>
         </div>
-        <span class="cap">Graph View · 1&nbsp;267 связанных заметок</span>
+        <span class="cap">Живой граф · 1 267 связанных заметок</span>
       </div>
-      <div class="grid" style="gap:12px">
-        <p class="lead">Я построил персональный слой памяти в Obsidian: разрозненные заметки, транскрипты и документы связаны в граф. Тот же паттерн масштабируется на данные компании.</p>
-        <div class="grid g2" style="gap:12px">
-          <div class="card"><div class="metric"><span class="v">1&nbsp;267</span><span class="l">файлов в индексе</span></div></div>
-          <div class="card"><div class="metric"><span class="v">12&nbsp;755</span><span class="l">смысловых фрагментов</span></div></div>
-          <div class="card"><div class="metric"><span class="v">0.72–0.79</span><span class="l">точность поиска (cos)</span></div></div>
-          <div class="card"><div class="metric"><span class="v">Локально</span><span class="l">эмбеддинги · без внешних API</span></div></div>
-        </div>
-        <p class="note">↑ Реальные показатели моего боевого индекса Obsidian Graph View.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 07 · JARVIS ============ -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow c2">Прототип · один человек = масштабная модель</span>
-    <h2 class="head">Jarvis — личный прототип<br>enterprise-паттерна</h2>
-    <p class="lead">Я довёл этот слой до рабочего ассистента для себя. Это ровно тот паттерн, что нужен бизнесу, но обкатанный на масштабе одного человека — с реальным кодом в проде, а не на слайдах.</p>
-    <div class="grid g3">
-      <div class="card"><div class="card-head"><span class="ico a">◈</span><h3>Память + семантика</h3></div><p>Ассистент отвечает по Obsidian, календарю и задачам, находя нужное по смыслу, а не по точному слову.</p></div>
-      <div class="card"><div class="card-head"><span class="ico c">⇄</span><h3>Авто-роутинг моделей</h3></div><p>Простые вопросы — быстрая модель, сложные аналитические — сильная. Качество там, где нужно, экономия — где можно.</p></div>
-      <div class="card"><div class="card-head"><span class="ico b">✎</span><h3>Пассивное обучение</h3></div><p>Ночью из диалогов извлекаются устойчивые факты в память — система знает больше со временем сама.</p></div>
-    </div>
-    <div class="badge-row">
-      <span class="chip"><span class="dot g"></span>В проде на выделенном сервере 24/7</span>
-      <span class="chip"><span class="dot g"></span>~300 автотестов проходят</span>
-      <span class="chip"><span class="dot g"></span>Telegram как поверхность — «там, где работают»</span>
-    </div>
-    <p class="lead" style="margin-top:2px">Enterprise-версия — это тот же контур, где источники памяти = 1С / CRM / ЭДО, а не личные заметки.</p>
-  </div>
-</section>
-
-<!-- ============ 08 · AGENTS COCKPIT ============ -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow c3">Operating cockpit</span>
-    <h2 class="head">Agents dashboard —<br>кабина управления агентами</h2>
-    <div class="split rev">
-      <div class="grid" style="gap:12px">
-        <p class="lead">Агенты — не чёрный ящик. Кокпит показывает, что они делают: очередь задач, статусы, доступные инструменты и точки, где нужно подтверждение человека.</p>
-        <div class="grid g2" style="gap:12px">
-          <div class="kpi"><span class="k">14 инструментов агента</span><span class="m">поиск, календарь, задачи, память, диспетчеризация</span></div>
-          <div class="kpi"><span class="k">Confirm-gate</span><span class="m">необратимое — только после «да» человека</span></div>
-          <div class="kpi"><span class="k">Фоновые задачи</span><span class="m">делегирование воркерам + статус</span></div>
-          <div class="kpi"><span class="k">Действие с источником</span><span class="m">видно, откуда взят контекст</span></div>
+      <div class="grid rise" style="gap:22px">
+        <h2 class="head" style="font-size:clamp(26px,3.4vw,42px)">Разрозненное →<br><span class="grad">связанная карта</span></h2>
+        <div class="grid g2" style="gap:22px">
+          <div class="stat"><span class="v grad">1 267</span><span class="l">файлов в индексе</span></div>
+          <div class="stat"><span class="v grad">12 755</span><span class="l">смысловых фрагментов</span></div>
+          <div class="stat"><span class="v">0.72–0.79</span><span class="l">точность поиска</span></div>
+          <div class="stat"><span class="v">Локально</span><span class="l">без внешних API</span></div>
         </div>
       </div>
-      <div class="imgframe" style="background:linear-gradient(180deg,#fbfcff,#f1f3f9);padding:16px">
-        <div style="display:flex;flex-direction:column;gap:9px;font-family:var(--sans)">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-weight:700;font-size:14px">Agents · очередь</span>
-            <span class="chip" style="padding:4px 10px"><span class="dot g"></span>online</span>
-          </div>
-          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px"><span class="ico a" style="width:30px;height:30px;font-size:11px">R</span><div style="flex:1"><div style="font-size:13px;font-weight:600">Собрать контекст по сделке #4821</div><div style="font-size:11px;color:var(--faint)">1С + CRM + ЭДО · со ссылками</div></div><span class="chip" style="padding:4px 9px;color:var(--green);background:rgba(12,166,120,.1);border-color:rgba(12,166,120,.2)">готово</span></div>
-          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px"><span class="ico c" style="width:30px;height:30px;font-size:11px">A</span><div style="flex:1"><div style="font-size:13px;font-weight:600">Подготовить акт сверки</div><div style="font-size:11px;color:var(--faint)">черновик · ждёт подтверждения</div></div><span class="chip" style="padding:4px 9px;color:var(--amber);background:rgba(232,89,12,.1);border-color:rgba(232,89,12,.2)">confirm</span></div>
-          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px"><span class="ico b" style="width:30px;height:30px;font-size:11px">D</span><div style="flex:1"><div style="font-size:13px;font-weight:600">Свести отчёт по продажам за Q</div><div style="font-size:11px;color:var(--faint)">делегировано воркеру</div></div><span class="chip" style="padding:4px 9px;color:var(--accent);background:var(--accent-soft);border-color:rgba(79,70,229,.2)">в работе</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 JARVIS -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c2 rise">Прототип</span>
+    <h2 class="head rise">Jarvis — <span class="grad">enterprise-паттерн</span><br>на масштабе одного человека</h2>
+    <div class="grid g3 rise" style="margin-top:6px">
+      <div class="card"><span class="ic a">◈</span><h3>Память + семантика</h3><p>Находит по смыслу, а не по точному слову.</p></div>
+      <div class="card"><span class="ic c">⇄</span><h3>Авто-роутинг моделей</h3><p>Сильная модель — где сложно, быстрая — где просто.</p></div>
+      <div class="card"><span class="ic b">✎</span><h3>Пассивное обучение</h3><p>Ночью извлекает факты из диалогов в память.</p></div>
+    </div>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot g"></span>В проде 24/7</span>
+      <span class="chip"><span class="dot g"></span>~300 автотестов</span>
+      <span class="chip"><span class="dot g"></span>Тот же контур — на данных компании</span>
+    </div>
+  </div>
+</section>
+
+<!-- 08 COCKPIT -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Operating cockpit</span>
+    <h2 class="head rise">Агенты — <span class="grad">не чёрный ящик</span></h2>
+    <div class="split rev" style="margin-top:4px">
+      <div class="grid rise" style="gap:16px">
+        <p class="lead">Кабина показывает очередь задач, статусы и точки, где нужно «да» человека.</p>
+        <div class="grid g2" style="gap:16px">
+          <div class="card"><span class="big">14</span><span class="note">инструментов агента</span></div>
+          <div class="card"><span class="big grad2">Confirm</span><span class="note">gate на необратимое</span></div>
         </div>
-        <span class="cap">Мокап кокпита · замените на свой скрин: assets/agents-cockpit.png</span>
+      </div>
+      <div class="imgframe rise" style="background:linear-gradient(180deg,#fbfcff,#eef1f8);padding:18px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:15px">Agents · очередь</span><span class="pill ok"><span class="dot g"></span>online</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic a" style="width:34px;height:34px;font-size:13px">R</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Контекст по сделке #4821</div><div class="note">1С + CRM + ЭДО · со ссылками</div></div><span class="pill ok">готово</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic c" style="width:34px;height:34px;font-size:13px">A</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Подготовить акт сверки</div><div class="note">черновик · ждёт «да»</div></div><span class="pill warn">confirm</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic b" style="width:34px;height:34px;font-size:13px">D</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Отчёт по продажам за Q</div><div class="note">делегировано воркеру</div></div><span class="pill run">в работе</span></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ 09 · 4 SCENARIOS ============ -->
+<!-- 09 SCENARIOS -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow">4 первых сценария для клиентов 1Бит</span>
-    <h2 class="head">Где слой памяти окупается быстрее всего</h2>
-    <div class="grid g2">
-      <div class="card pad-lg"><div class="card-head"><span class="ico a">01</span><h3>Единая память по клиенту и сделке</h3></div><p>Менеджер спрашивает словами — система собирает контекст из CRM + 1С + переписки в один ответ со ссылками. Ноль ручного «поиска по вкладкам».</p><span class="chip" style="align-self:flex-start"><span class="dot"></span>CRM · 1С · чаты</span></div>
-      <div class="card pad-lg"><div class="card-head"><span class="ico c">02</span><h3>Агент по документообороту (ЭДО)</h3></div><p>«Найди договор», «сверь суммы», «подготовь акт» — агент находит, сверяет и готовит черновик; отправка — только после подтверждения.</p><span class="chip" style="align-self:flex-start"><span class="dot c3"></span>ЭДО · документы</span></div>
-      <div class="card pad-lg"><div class="card-head"><span class="ico b">03</span><h3>BI-объяснитель</h3></div><p>Вопрос к данным на человеческом языке — ответ с цифрой и ссылкой на источник. BI перестаёт требовать аналитика для каждого запроса.</p><span class="chip" style="align-self:flex-start"><span class="dot c2"></span>BI · показатели</span></div>
-      <div class="card pad-lg"><div class="card-head"><span class="ico a">04</span><h3>Онбординг и база знаний</h3></div><p>Новый сотрудник спрашивает — система отвечает из реального контекста компании, а не из устаревшей вики. Знание перестаёт зависеть от людей.</p><span class="chip" style="align-self:flex-start"><span class="dot"></span>регламенты · история</span></div>
-    </div>
-    <p class="note">Каждый сценарий подключается отдельно — начинаем с одного, расширяем по мере доверия.</p>
-  </div>
-</section>
-
-<!-- ============ 10 · 15-MIN DEMO ============ -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow c3">Демо-сценарий на первой встрече</span>
-    <h2 class="head">Один вопрос менеджера — за 15 минут</h2>
-    <p class="lead">Живой проход по одному реальному запросу, чтобы концепт стал осязаемым. Ничего не выдумываем — показываем на тестовом контуре.</p>
-    <div class="grid g4">
-      <div class="week"><span class="wk">00:00 → 03:00</span><h4>Вопрос словами</h4><ul><li>«Что по клиенту X и его сделке?»</li><li>задаём в чате/Telegram</li></ul></div>
-      <div class="week"><span class="wk">03:00 → 08:00</span><h4>Сбор контекста</h4><ul><li>агент тянет CRM + 1С + ЭДО</li><li>связывает в один ответ</li></ul></div>
-      <div class="week"><span class="wk">08:00 → 12:00</span><h4>Ответ с источником</h4><ul><li>факты + ссылки на записи</li><li>видно, откуда каждая цифра</li></ul></div>
-      <div class="week"><span class="wk">12:00 → 15:00</span><h4>Действие</h4><ul><li>агент предлагает шаг</li><li>выполняет после «да»</li></ul></div>
-    </div>
-    <div class="disclaimer"><span>ℹ</span><div><b>Честно:</b> на первой встрече это демо на тестовых/обезличенных данных. Реальные показатели по клиенту снимаются в пилоте — мы не показываем «результаты», которых ещё нет.</div></div>
-  </div>
-</section>
-
-<!-- ============ 11 · 30-DAY PILOT ============ -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow">30-дневный пилот</span>
-    <h2 class="head">От доступа к данным — к работающему агенту за 4 недели</h2>
-    <div class="timeline">
-      <div class="week"><span class="wk">Неделя 1</span><h4>Подключение</h4><ul><li>1 источник (CRM или 1С)</li><li>тестовый контур, права</li><li>выбор 1 сценария</li></ul></div>
-      <div class="week"><span class="wk">Неделя 2</span><h4>Слой памяти</h4><ul><li>индексация, граф связей</li><li>ответы со ссылками</li><li>проверка на реальных запросах</li></ul></div>
-      <div class="week"><span class="wk">Неделя 3</span><h4>Агент + действия</h4><ul><li>1–2 безопасных действия</li><li>confirm-gate на остальное</li><li>обкатка с 3–5 сотрудниками</li></ul></div>
-      <div class="week"><span class="wk">Неделя 4</span><h4>Замер + решение</h4><ul><li>снимаем KPI пилота</li><li>отчёт go / no-go</li><li>план масштабирования</li></ul></div>
-    </div>
-    <h3 style="margin:6px 0 0;font-size:15px">KPI пилота <span class="note" style="font-weight:400">— измеряем, не обещаем заранее</span></h3>
-    <div class="grid g4">
-      <div class="kpi"><span class="t">KPI-01</span><span class="k">Время сбора контекста</span><span class="m">минуты «до» vs «после» на типовой запрос</span></div>
-      <div class="kpi"><span class="t">KPI-02</span><span class="k">% ответов со ссылкой на источник</span><span class="m">доля проверяемых ответов</span></div>
-      <div class="kpi"><span class="t">KPI-03</span><span class="k">Adoption</span><span class="m">активные пользователи / запросы в неделю</span></div>
-      <div class="kpi"><span class="t">KPI-04</span><span class="k">Действия агента</span><span class="m">выполнено с подтверждением, без ошибок</span></div>
+    <span class="eyebrow rise">4 сценария для клиентов 1Бит</span>
+    <h2 class="head rise">Где окупается <span class="grad">быстрее всего</span></h2>
+    <div class="grid g2 rise" style="margin-top:6px">
+      <div class="card"><div style="display:flex;align-items:center;gap:14px"><span class="big grad">01</span><h3>Единая память по клиенту и сделке</h3></div><p>CRM + 1С + переписка → один ответ со ссылками. Ноль ручного поиска.</p></div>
+      <div class="card"><div style="display:flex;align-items:center;gap:14px"><span class="big grad">02</span><h3>Агент по документообороту</h3></div><p>«Найди · сверь · подготовь» по ЭДО. Отправка — после подтверждения.</p></div>
+      <div class="card"><div style="display:flex;align-items:center;gap:14px"><span class="big grad">03</span><h3>BI-объяснитель</h3></div><p>Вопрос словами → цифра со ссылкой. BI без аналитика на каждый запрос.</p></div>
+      <div class="card"><div style="display:flex;align-items:center;gap:14px"><span class="big grad">04</span><h3>Онбординг и база знаний</h3></div><p>Новичок спрашивает — система отвечает из контекста компании.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ============ 12 · COMMERCIAL PACKAGE ============ -->
+<!-- 10 DEMO -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c2">Коммерческая упаковка услуги</span>
-    <h2 class="head">Продукт, а не разовый проект</h2>
-    <div class="grid g4">
-      <div class="price"><span class="tier">Шаг 0</span><h3>Discovery</h3><p class="p">фиксированный, короткий</p><ul><li>аудит источников</li><li>выбор сценария</li><li>дизайн пилота</li></ul></div>
-      <div class="price feat"><span class="tag-feat">старт</span><span class="tier">Шаг 1</span><h3>Пилот · 30 дней</h3><p class="p">setup-fee</p><ul><li>1 источник, 1 сценарий</li><li>слой памяти + агент</li><li>отчёт по KPI + go/no-go</li></ul></div>
-      <div class="price"><span class="tier">Шаг 2</span><h3>Rollout</h3><p class="p">проектно, по объёму</p><ul><li>+ источники и сценарии</li><li>интеграция в процессы</li><li>обучение команды</li></ul></div>
-      <div class="price"><span class="tier">Шаг 3</span><h3>Подписка</h3><p class="p">ежемесячно</p><ul><li>работа агентов + память</li><li>сопровождение, SLA</li><li>развитие сценариев</li></ul></div>
+    <span class="eyebrow c3 rise">Демо на 15 минут</span>
+    <h2 class="head rise">Один вопрос менеджера — <span class="grad">вживую</span></h2>
+    <div class="timeline rise" style="margin-top:6px">
+      <div class="week"><span class="wk">00–03</span><h4>Вопрос словами</h4><ul><li>«Что по клиенту X?»</li></ul></div>
+      <div class="week"><span class="wk">03–08</span><h4>Сбор контекста</h4><ul><li>CRM + 1С + ЭДО</li><li>в один ответ</li></ul></div>
+      <div class="week"><span class="wk">08–12</span><h4>Ответ + источник</h4><ul><li>факты со ссылками</li></ul></div>
+      <div class="week"><span class="wk">12–15</span><h4>Действие</h4><ul><li>шаг после «да»</li></ul></div>
     </div>
-    <div class="disclaimer"><span>ℹ</span><div><b>Про цифры:</b> конкретные суммы определяются по числу источников, сценариев и пользователей на этапе Discovery. В презентации намеренно нет выдуманных прайсов и ROI.</div></div>
+    <div class="disclaimer rise"><span>ℹ</span><div><b>Честно:</b> демо на тестовых / обезличенных данных. Реальные показатели снимаются в пилоте.</div></div>
   </div>
 </section>
 
-<!-- ============ 13 · FIRST MEETING ASK ============ -->
+<!-- 11 PILOT -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow">Что предлагаю на первой встрече</span>
-    <h2 class="head">Три конкретных шага, без обязательств по цифрам</h2>
-    <div class="split">
-      <div class="grid" style="gap:14px">
-        <div class="card pad-lg"><div class="card-head"><span class="ico a">1</span><h3>Живое демо на 15 минут</h3></div><p>Показываю паттерн Jarvis + слой памяти на обезличенных данных — концепт становится осязаемым.</p></div>
-        <div class="card pad-lg"><div class="card-head"><span class="ico c">2</span><h3>Выбрать 1–2 клиента для пилота</h3></div><p>Из текущей базы 1Бит — с понятным сценарием (CRM-память или ЭДО-агент) и доступом к тестовому контуру.</p></div>
-        <div class="card pad-lg"><div class="card-head"><span class="ico b">3</span><h3>Согласовать формат партнёрства</h3></div><p>Кто владеет отношениями с клиентом, роли, кто делает интеграцию, как делим выручку с подписки.</p></div>
-      </div>
+    <span class="eyebrow rise">30-дневный пилот</span>
+    <h2 class="head rise">От доступа — к <span class="grad">работающему агенту</span></h2>
+    <div class="timeline rise" style="margin-top:4px">
+      <div class="week"><span class="wk">Неделя 1</span><h4>Подключение</h4><ul><li>1 источник</li><li>1 сценарий</li></ul></div>
+      <div class="week"><span class="wk">Неделя 2</span><h4>Слой памяти</h4><ul><li>граф + индекс</li><li>ответы со ссылками</li></ul></div>
+      <div class="week"><span class="wk">Неделя 3</span><h4>Агент + действия</h4><ul><li>1–2 действия</li><li>обкатка с командой</li></ul></div>
+      <div class="week"><span class="wk">Неделя 4</span><h4>Замер + решение</h4><ul><li>KPI пилота</li><li>go / no-go</li></ul></div>
+    </div>
+    <div class="grid g4 rise" style="gap:14px">
+      <div class="card"><span class="note" style="color:var(--accent)">KPI-01</span><h3 style="font-size:15px">Время сбора контекста</h3></div>
+      <div class="card"><span class="note" style="color:var(--accent)">KPI-02</span><h3 style="font-size:15px">% ответов со ссылкой</h3></div>
+      <div class="card"><span class="note" style="color:var(--accent)">KPI-03</span><h3 style="font-size:15px">Adoption</h3></div>
+      <div class="card"><span class="note" style="color:var(--accent)">KPI-04</span><h3 style="font-size:15px">Действия агента</h3></div>
+    </div>
+    <p class="note rise">KPI пилота — измеряем, не обещаем заранее.</p>
+  </div>
+</section>
+
+<!-- 12 COMMERCIAL -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c2 rise">Коммерческая упаковка</span>
+    <h2 class="head rise">Продукт, <span class="grad">а не разовый проект</span></h2>
+    <div class="grid g4 rise" style="margin-top:6px">
+      <div class="price"><span class="tier">Шаг 0</span><h3>Discovery</h3><span class="p">короткий, фикс</span><ul><li>аудит источников</li><li>выбор сценария</li></ul></div>
+      <div class="price feat"><span class="tag-feat">старт</span><span class="tier">Шаг 1</span><h3>Пилот · 30 дней</h3><span class="p">setup-fee</span><ul><li>1 источник + агент</li><li>KPI + go/no-go</li></ul></div>
+      <div class="price"><span class="tier">Шаг 2</span><h3>Rollout</h3><span class="p">по объёму</span><ul><li>+ источники</li><li>в процессы</li></ul></div>
+      <div class="price"><span class="tier">Шаг 3</span><h3>Подписка</h3><span class="p">ежемесячно</span><ul><li>агенты + память</li><li>SLA</li></ul></div>
+    </div>
+    <div class="disclaimer rise"><span>ℹ</span><div><b>Про цифры:</b> суммы — по числу источников и пользователей на Discovery. Выдуманных прайсов и ROI здесь нет.</div></div>
+  </div>
+</section>
+
+<!-- 13 FIRST MEETING -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow rise">Первая встреча</span>
+    <h2 class="head rise">Три шага <span class="grad">без обязательств</span></h2>
+    <div class="trio rise" style="margin-top:6px">
+      <div class="word"><div><span class="n">01</span><div class="t">Демо 15 минут</div></div><div class="d">Паттерн Jarvis + память на обезличенных данных.</div></div>
+      <div class="word"><div><span class="n">02</span><div class="t">1–2 клиента</div></div><div class="d">Из базы 1Бит, с понятным сценарием и тестовым контуром.</div></div>
+      <div class="word"><div><span class="n">03</span><div class="t">Формат партнёрства</div></div><div class="d">Роли, интеграция, деление выручки с подписки.</div></div>
+    </div>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot g"></span>Решение — за одну встречу</span>
+      <span class="chip"><span class="dot g"></span>Первый результат — за 30 дней</span>
+      <span class="chip"><span class="dot g"></span>Риск ограничен рамкой пилота</span>
+    </div>
+  </div>
+</section>
+
+<!-- 14 SOURCES -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Источники и допущения</span>
+    <h2 class="head rise"><span class="grad">Proof реальный.</span><br>ROI не выдуман.</h2>
+    <div class="split rise" style="margin-top:6px">
       <div class="grid" style="gap:12px">
-        <div class="card pad-lg"><div class="metric"><span class="l">Что нужно от 1Бит</span><span class="v" style="font-size:20px;color:var(--accent)">Доступ + клиент</span><span class="s">тестовый контур одного клиента и 3–5 сотрудников на обкатку</span></div></div>
-        <div class="card pad-lg"><div class="metric"><span class="l">Что даю я</span><span class="v" style="font-size:20px;color:var(--accent-3)">Слой + агенты</span><span class="s">рабочий прототип, а не концепт с нуля</span></div></div>
-        <ul class="clean c2">
-          <li>Решение по пилоту — за одну встречу</li>
-          <li>Первый результат виден за 30 дней</li>
-          <li>Риск ограничен рамкой пилота</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ 14 · SOURCES & ASSUMPTIONS ============ -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow c3">Источники и допущения</span>
-    <h2 class="head">Что доказано, а что — гипотеза для пилота</h2>
-    <div class="split">
-      <div class="grid" style="gap:12px">
-        <h3 style="margin:0;font-size:15px">✓ Проверенные факты (мой прод)</h3>
-        <ul class="clean c3">
-          <li>Слой памяти: <strong>1 267 файлов / 12 755 фрагментов</strong>, локальные эмбеддинги, поиск 0.72–0.79</li>
-          <li>Агент с <strong>14 инструментами</strong>, confirm-gate на необратимое, ~300 автотестов</li>
-          <li>Авто-роутинг моделей и пассивное извлечение фактов работают в проде 24/7</li>
+        <div class="chip" style="align-self:flex-start"><span class="dot c3"></span>Проверено — мой прод</div>
+        <ul class="clean" style="counter-reset:none;gap:10px">
+          <li style="font-size:16px">1 267 файлов / 12 755 фрагментов, поиск 0.72–0.79</li>
+          <li style="font-size:16px">14 инструментов агента, ~300 автотестов</li>
+          <li style="font-size:16px">Авто-роутинг и пассивная память — 24/7</li>
         </ul>
       </div>
       <div class="grid" style="gap:12px">
-        <h3 style="margin:0;font-size:15px">◇ Допущения (проверяем в пилоте)</h3>
-        <ul class="clean c2">
-          <li>Конкретный эффект у клиента 1Бит — <strong>гипотеза</strong>, снимается KPI пилота</li>
-          <li>Готовность коннекторов к 1С / CRM / ЭДО оценивается на Discovery</li>
-          <li>Цифры экономии/ROI в презентации <strong>отсутствуют намеренно</strong></li>
+        <div class="chip" style="align-self:flex-start"><span class="dot c2"></span>Гипотезы — в пилоте</div>
+        <ul class="clean" style="counter-reset:none;gap:10px">
+          <li style="font-size:16px">Эффект у клиента — метрика пилота, не обещание</li>
+          <li style="font-size:16px">Готовность коннекторов — оценка на Discovery</li>
+          <li style="font-size:16px">Данные клиента остаются в его контуре</li>
         </ul>
       </div>
     </div>
-    <div class="disclaimer"><span>✎</span><div><b>Принцип честности:</b> прототип и метрики слоя памяти — реальные и мои. Клиентские результаты не выдуманы: всё, что касается эффекта у клиента, сформулировано как KPI пилота, а не как обещанный итог. Данные клиента остаются в его контуре; права доступа исходных систем сохраняются.</div></div>
-    <div class="foot"><span>Second Brain for Business · концепт для 1Бит</span><span class="note">презентация редактируется: все тексты и токены — в этом HTML</span></div>
+    <p class="note rise">Second Brain for Business · концепт для 1Бит · вся презентация редактируется в этом HTML</p>
   </div>
 </section>
 
-</div><!-- /track -->
-</div><!-- /deck -->
+</div></div>
 
-<div class="arrows">
-  <button class="arrow" id="prev" aria-label="Назад">‹</button>
-  <button class="arrow" id="next" aria-label="Вперёд">›</button>
-</div>
+<div class="arrows"><button class="arrow" id="prev">‹</button><button class="arrow" id="next">›</button></div>
 <div class="dots" id="dots"></div>
 <div class="hint">↔ листать · P — печать</div>
 
@@ -569,29 +499,27 @@ ul.clean.c2 li::before{color:var(--accent-2)} ul.clean.c3 li::before{color:var(-
 (function(){
   const track=document.getElementById('track');
   const slides=[...track.children];
-  const total=slides.length;
-  const cur=document.getElementById('cur');
-  const totalEl=document.getElementById('total');
-  const progress=document.getElementById('progress');
-  const dotsWrap=document.getElementById('dots');
+  const total=slides.length, cur=document.getElementById('cur'), progress=document.getElementById('progress'), dotsWrap=document.getElementById('dots');
   let i=0;
-  totalEl.textContent=String(total).padStart(2,'0');
+  document.getElementById('total').textContent=String(total).padStart(2,'0');
   slides.forEach((_,n)=>{const b=document.createElement('button');b.className='dnav'+(n===0?' on':'');b.onclick=()=>go(n);dotsWrap.appendChild(b);});
   const dots=[...dotsWrap.children];
+  function reveal(s){const els=s.querySelectorAll('.rise');els.forEach((e,k)=>e.style.transitionDelay=(80+k*90)+'ms');}
   function go(n){
     i=Math.max(0,Math.min(total-1,n));
     track.style.transform='translateX('+(-i*100)+'vw)';
     cur.textContent=String(i+1).padStart(2,'0');
     progress.style.width=((i+1)/total*100)+'%';
     dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    slides.forEach((s,k)=>{if(k===i){reveal(s);s.classList.add('is-active');}else{s.classList.remove('is-active');}});
   }
   document.getElementById('next').onclick=()=>go(i+1);
   document.getElementById('prev').onclick=()=>go(i-1);
   window.addEventListener('keydown',e=>{
     if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
     else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
-    else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(total-1);}
-    else if(e.key==='p'||e.key==='P'){window.print();}
+    else if(e.key==='Home')go(0);else if(e.key==='End')go(total-1);
+    else if(e.key==='p'||e.key==='P')window.print();
   });
   let x0=null;
   track.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
