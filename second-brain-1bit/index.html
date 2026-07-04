@@ -112,6 +112,22 @@ h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-he
 .flow-arrow{color:var(--faint);font-size:22px;text-align:center}
 .flow-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:2px}
 
+/* compact architecture bands */
+.stack{display:flex;flex-direction:column;gap:clamp(4px,.7vh,9px)}
+.band{display:flex;align-items:center;gap:clamp(14px,2vw,26px);background:var(--glass);border:1px solid var(--line);
+  border-radius:15px;padding:clamp(12px,1.5vh,18px) clamp(16px,1.8vw,24px);box-shadow:var(--shadow)}
+.band.hi{border-color:rgba(79,70,229,.4);background:linear-gradient(90deg,rgba(79,70,229,.07),var(--glass))}
+.band.hr{border-color:rgba(225,29,72,.32);background:linear-gradient(90deg,rgba(225,29,72,.05),var(--glass))}
+.band-l{flex:0 0 clamp(120px,15vw,190px);display:flex;align-items:center;gap:11px;font-family:var(--display);
+  font-weight:700;font-size:clamp(15px,1.5vw,20px);letter-spacing:-.01em}
+.band-n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.band.hr .band-n{color:var(--accent-2)} .band.hi .band-n{color:var(--accent)}
+.band-c{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.tg{font-size:clamp(12px,1.1vw,15px);font-weight:600;color:var(--ink-soft);background:var(--glass-strong);
+  border:1px solid var(--line);border-radius:9px;padding:6px 12px}
+.tg small{color:var(--faint);font-weight:500;margin-left:5px}
+.band-sep{text-align:center;color:var(--faint);font-size:15px;line-height:.6}
+
 /* timeline weeks */
 .timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
 .week{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,1.5vw,22px);box-shadow:var(--shadow);
@@ -269,39 +285,30 @@ ul.clean{counter-reset:li}
   <div class="slide-inner">
     <span class="eyebrow c3 rise">Архитектура</span>
     <h2 class="head rise">Источники → <span class="grad">память</span> → агенты</h2>
-    <div class="flow rise" style="margin-top:6px">
-      <div class="flow-col">
-        <div class="flow-label">Источники</div>
-        <div class="flow-node"><span class="dot"></span>1С / ERP</div>
-        <div class="flow-node"><span class="dot"></span>CRM</div>
-        <div class="flow-node"><span class="dot"></span>BI</div>
-        <div class="flow-node"><span class="dot"></span>ЭДО · чаты · файлы</div>
+    <div class="stack rise" style="margin-top:4px">
+      <div class="band">
+        <div class="band-l"><span class="band-n">01</span>Источники</div>
+        <div class="band-c"><span class="tg">1С / ERP</span><span class="tg">CRM</span><span class="tg">BI</span><span class="tg">ЭДО</span><span class="tg">чаты · файлы</span></div>
       </div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-col">
-        <div class="flow-label">Сбор</div>
-        <div class="flow-node"><span class="dot c3"></span>Коннекторы <small>интеграции 1Бит</small></div>
-        <div class="flow-node"><span class="dot c3"></span>Нормализация <small>единая схема</small></div>
-        <div class="flow-node"><span class="dot c3"></span>Права <small>наследуются</small></div>
+      <div class="band-sep">↓</div>
+      <div class="band">
+        <div class="band-l"><span class="band-n">02</span>Сбор</div>
+        <div class="band-c"><span class="tg">Коннекторы<small>интеграции 1Бит</small></span><span class="tg">Нормализация<small>единая схема</small></span><span class="tg">Права<small>наследуются</small></span></div>
       </div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-col">
-        <div class="flow-label">Слой памяти</div>
-        <div class="flow-node hi"><span class="dot"></span>Граф знаний</div>
-        <div class="flow-node hi"><span class="dot"></span>Семантический индекс</div>
-        <div class="flow-node hi"><span class="dot"></span>Ответ + источник</div>
+      <div class="band-sep">↓</div>
+      <div class="band hi">
+        <div class="band-l"><span class="band-n">03</span>Слой памяти</div>
+        <div class="band-c"><span class="tg">Граф знаний</span><span class="tg">Семантический индекс</span><span class="tg">Ответ + источник</span></div>
       </div>
-      <div class="flow-arrow">→</div>
-      <div class="flow-col">
-        <div class="flow-label">Агенты</div>
-        <div class="flow-node hr"><span class="dot c2"></span>Retrieval <small>ответ с контекстом</small></div>
-        <div class="flow-node hr"><span class="dot c2"></span>Action <small>confirm-gate</small></div>
-        <div class="flow-node"><span class="dot"></span>Чат · Telegram · кокпит</div>
+      <div class="band-sep">↓</div>
+      <div class="band hr">
+        <div class="band-l"><span class="band-n">04</span>Агенты</div>
+        <div class="band-c"><span class="tg">Retrieval<small>с контекстом</small></span><span class="tg">Action<small>confirm-gate</small></span><span class="tg">Чат · Telegram · кокпит</span></div>
       </div>
     </div>
     <div class="badge-row rise">
-      <span class="chip"><span class="dot g"></span>Права исходных систем сохраняются</span>
-      <span class="chip"><span class="dot g"></span>Каждый ответ — со ссылкой</span>
+      <span class="chip"><span class="dot g"></span>Права сохраняются</span>
+      <span class="chip"><span class="dot g"></span>Ответ — со ссылкой</span>
       <span class="chip"><span class="dot g"></span>Необратимое — через подтверждение</span>
     </div>
   </div>
