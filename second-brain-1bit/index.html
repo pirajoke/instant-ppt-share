@@ -111,6 +111,7 @@ ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 ul.clean li{display:flex;gap:14px;align-items:baseline;font-size:clamp(16px,1.7vw,22px);line-height:1.3;color:var(--ink-soft);font-weight:500}
 ul.clean li b{font-weight:700;color:var(--ink)}
 ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;flex:none;font-size:clamp(15px,1.5vw,19px)}
+ul.clean.wip li::before{content:"◐";color:var(--amber);font-weight:800;flex:none;font-size:clamp(15px,1.5vw,19px)}
 
 .pill{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px}
 .pill.ok{color:var(--green);background:rgba(12,166,120,.1)} .pill.warn{color:var(--amber);background:rgba(232,89,12,.1)} .pill.run{color:var(--accent);background:var(--accent-soft)}
@@ -153,15 +154,15 @@ ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;fl
   <div class="slide-inner">
     <span class="eyebrow c2 rise">Что я уже собрал — сам</span>
     <h1 class="title rise">Личная<br><span class="grad">AI-система</span></h1>
-    <p class="lead rise" style="font-size:clamp(18px,2vw,26px);max-width:46ch">Second brain, слой памяти и агенты. Не идея и не прототип на слайдах — <b>работает у меня 24/7.</b></p>
+    <p class="lead rise" style="font-size:clamp(18px,2vw,26px);max-width:46ch"><b>Second brain и слой памяти уже работают.</b> Jarvis-агент запущен и в активной разработке.</p>
     <div class="cover-flow rise">
       <span class="cf">Obsidian · заметки</span><span class="cf-sep">→</span>
       <span class="cf hi">Память</span><span class="cf-sep">→</span><span class="cf hi">Агенты · Jarvis</span>
     </div>
     <div class="badge-row rise" style="margin-top:6px">
-      <span class="chip"><span class="dot"></span>Граф из 1 267 заметок</span>
+      <span class="chip"><span class="dot c3"></span>Граф из 1 267 заметок</span>
       <span class="chip"><span class="dot c3"></span>12 755 фрагментов памяти</span>
-      <span class="chip"><span class="dot c2"></span>14 инструментов агента · в проде</span>
+      <span class="chip"><span class="dot" style="background:var(--amber)"></span>Jarvis-агент · допиливаю</span>
     </div>
   </div>
 </section>
@@ -248,16 +249,18 @@ ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;fl
 <!-- 05 JARVIS -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c2 rise">Ассистент</span>
-    <h2 class="head rise">Jarvis — <span class="grad">мой second brain</span><br>в Telegram</h2>
-    <div class="trio rise" style="margin-top:6px">
+    <span class="eyebrow c2 rise">Ассистент · в разработке</span>
+    <h2 class="head rise">Jarvis — <span class="grad">агент в Telegram</span></h2>
+    <p class="lead rise" style="font-size:16px">Запущен и крутится 24/7. Механика собрана — сейчас довожу качество диалога и роутинг.</p>
+    <div class="trio rise" style="margin-top:2px">
       <div class="word"><div><span class="n">01</span><div class="t">Память + семантика</div></div><div class="d">Отвечает по vault, календарю и задачам — находит по смыслу и даёт ссылку.</div></div>
-      <div class="word"><div><span class="n">02</span><div class="t">Авто-роутинг моделей</div></div><div class="d">Сложное — на сильную модель, простое — на быструю. Качество там, где нужно.</div></div>
+      <div class="word"><div><span class="n">02</span><div class="t">Авто-роутинг моделей</div></div><div class="d">Сложное — на сильную модель, простое — на быструю. Механизм работает.</div></div>
       <div class="word"><div><span class="n">03</span><div class="t">Пассивное обучение</div></div><div class="d">Ночью сам вытаскивает устойчивые факты из диалогов в память.</div></div>
     </div>
     <div class="badge-row rise">
-      <span class="chip"><span class="dot g"></span>В проде на Mac mini 24/7</span>
-      <span class="chip"><span class="dot g"></span>~300 автотестов проходят</span>
+      <span class="chip"><span class="dot g"></span>Запущен на Mac mini 24/7</span>
+      <span class="chip"><span class="dot g"></span>~300 автотестов</span>
+      <span class="chip"><span class="dot" style="background:var(--amber)"></span>Качество диалога — допиливаю</span>
     </div>
   </div>
 </section>
@@ -305,17 +308,27 @@ ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;fl
 <!-- 08 SUMMARY -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow rise">Итог</span>
-    <h2 class="head rise"><span class="grad">Всё это уже работает.</span><br>Собрано мной.</h2>
-    <ul class="clean check rise" style="margin-top:6px">
-      <li><b>Second brain</b> в Obsidian — граф из 1 267 заметок</li>
-      <li><b>Слой памяти</b> — семантический индекс, 12 755 фрагментов, локально</li>
-      <li><b>Jarvis</b> — ассистент в Telegram с авто-роутингом моделей</li>
-      <li><b>Агенты</b> — 14 инструментов, действия с подтверждением</li>
-      <li><b>Пассивное обучение</b> — факты из диалогов копятся сами</li>
-      <li><b>В проде 24/7</b> — на своём железе, ~300 автотестов</li>
-    </ul>
-    <p class="note rise">Личная AI-система · demo · вся презентация редактируется в этом HTML</p>
+    <span class="eyebrow rise">Итог — честно</span>
+    <h2 class="head rise">Что <span class="grad">работает</span>,<br>а что ещё допиливаю</h2>
+    <div class="split rise" style="margin-top:6px">
+      <div class="grid" style="gap:14px">
+        <div class="chip" style="align-self:flex-start"><span class="dot g"></span>Работает</div>
+        <ul class="clean check" style="gap:12px">
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Second brain</b> — граф из 1 267 заметок</li>
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Семантическая память</b> — 12 755 фрагментов, локально</li>
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Инфраструктура 24/7</b> — бот, индекс, ночные джобы, ~300 тестов</li>
+        </ul>
+      </div>
+      <div class="grid" style="gap:14px">
+        <div class="chip" style="align-self:flex-start"><span class="dot" style="background:var(--amber)"></span>В доработке</div>
+        <ul class="clean wip" style="gap:12px">
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Jarvis-диалог</b> — путает вопрос / заметку / задачу</li>
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Агентные цепочки</b> — надёжность в живом чате сырая</li>
+          <li style="font-size:clamp(15px,1.5vw,19px)"><b>Пассивное обучение</b> — включено, оцениваю эффект</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note rise">Фундамент готов и работает. Агентный слой — довожу до ума.</p>
   </div>
 </section>
 
