@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Персональная AI-система — воркшоп Network School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080908;
+    --dark: #111412;
+    --dark-2: #191f1b;
+    --line: rgba(255,255,255,0.12);
+    --line-strong: rgba(255,107,43,0.48);
+    --white: #f5f2ea;
+    --muted: #a49f97;
+    --dim: #6d6962;
+    --orange: #ff6b2b;
+    --amber: #f1bd58;
+    --green: #79d6a4;
+    --cyan: #70d7e8;
+    --blue: #7aa8ff;
+    --red: #f06464;
+    --font-heading: "Space Grotesk", sans-serif;
+    --font-body: "Inter", sans-serif;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    cursor: none;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at 50% 44%, black 0%, transparent 72%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 16% 18%, rgba(255,107,43,0.18), transparent 28%),
+      radial-gradient(circle at 84% 72%, rgba(112,215,232,0.12), transparent 32%),
+      radial-gradient(circle at 58% 8%, rgba(121,214,164,0.08), transparent 26%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.045'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .cursor-dot,
+  .cursor-ring {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--orange);
+  }
+  .cursor-ring {
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255,107,43,0.55);
+    border-radius: 999px;
+    transition: width 0.2s, height 0.2s;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--orange), var(--amber));
+    z-index: 200;
+    transition: width 0.35s ease;
+  }
+
+  .counter {
+    position: fixed;
+    right: 44px;
+    bottom: 34px;
+    z-index: 200;
+    font-family: var(--font-heading);
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--dim);
+  }
+  .counter b { color: var(--orange); font-weight: 600; }
+
+  .nav {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 200;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid var(--dim);
+    background: transparent;
+    cursor: pointer;
+  }
+  .dot.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    transform: scale(1.35);
+  }
+
+  .arrows {
+    position: fixed;
+    right: 126px;
+    bottom: 27px;
+    z-index: 200;
+    display: flex;
+    gap: 8px;
+  }
+  .arrow {
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255,107,43,0.35);
+    border-radius: 7px;
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .arrow:hover { color: var(--orange); border-color: var(--orange); }
+
+  .slides {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    z-index: 10;
+  }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 72px 86px;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: translateY(34px);
+    pointer-events: none;
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .kicker {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--orange);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 22px;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.04em;
+  }
+  h1 {
+    font-size: clamp(74px, 8vw, 132px);
+    line-height: 0.9;
+    max-width: 1180px;
+  }
+  h2 {
+    font-size: clamp(46px, 5.2vw, 84px);
+    line-height: 0.96;
+  }
+  h3 {
+    font-size: 26px;
+    line-height: 1.1;
+  }
+  em {
+    color: var(--orange);
+    font-style: normal;
+  }
+  p {
+    color: var(--muted);
+    font-size: clamp(17px, 1.35vw, 21px);
+    line-height: 1.55;
+  }
+
+  .layout {
+    width: min(1560px, 100%);
+    min-height: 78vh;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 72px;
+    align-items: center;
+  }
+  .section-head {
+    width: min(1480px, 100%);
+    margin-bottom: 48px;
+  }
+  .section-head p {
+    max-width: 780px;
+    margin-top: 22px;
+  }
+
+  .hero {
+    align-items: center;
+  }
+  .hero-mark {
+    position: absolute;
+    right: 6vw;
+    top: 10vh;
+    font-family: var(--font-heading);
+    font-size: clamp(160px, 23vw, 390px);
+    line-height: 0.8;
+    font-weight: 700;
+    letter-spacing: -0.08em;
+    color: rgba(255,255,255,0.035);
+    pointer-events: none;
+  }
+  .hero-subtitle {
+    max-width: 820px;
+    margin-top: 30px;
+    font-size: 25px;
+    color: #c9c1b5;
+  }
+  .hero-strip {
+    margin-top: 64px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.045);
+    border-radius: 999px;
+    padding: 12px 16px;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    color: #ddd6cb;
+  }
+  .pill.accent { border-color: rgba(255,107,43,0.55); color: var(--orange); }
+  .pipe {
+    color: var(--dim);
+    font-family: var(--font-heading);
+    font-size: 26px;
+  }
+
+  .flow-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 28px;
+    position: relative;
+  }
+  .flow-card {
+    min-height: 210px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.13);
+    background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025));
+    border-radius: 18px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 28px 80px rgba(0,0,0,0.26);
+  }
+  .flow-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border-top: 3px solid var(--tone, var(--orange));
+    pointer-events: none;
+  }
+  .flow-num {
+    color: var(--tone, var(--orange));
+    font-family: var(--font-heading);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .flow-card h3 { margin-bottom: 12px; }
+  .flow-card p {
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  .flow-icon {
+    position: absolute;
+    right: 24px;
+    bottom: 20px;
+    font-family: var(--font-heading);
+    font-size: 48px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.08);
+  }
+  .flow-arrow {
+    position: absolute;
+    width: 38px;
+    height: 2px;
+    background: rgba(255,255,255,0.35);
+    top: 106px;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+  .flow-arrow::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: -5px;
+    width: 12px;
+    height: 12px;
+    border-top: 2px solid rgba(255,255,255,0.35);
+    border-right: 2px solid rgba(255,255,255,0.35);
+    transform: rotate(45deg);
+  }
+  .a1 { left: 25%; }
+  .a2 { left: 50%; }
+  .a3 { left: 75%; }
+  .flow-arrow.down {
+    width: 2px;
+    height: 30px;
+    left: 87.5%;
+    top: 210px;
+    transform: none;
+  }
+  .flow-arrow.down::after {
+    right: -5px;
+    top: auto;
+    bottom: -2px;
+    transform: rotate(135deg);
+  }
+  .flow-arrow.leftward {
+    top: 346px;
+  }
+  .flow-arrow.leftward::after {
+    right: auto;
+    left: -2px;
+    transform: rotate(-135deg);
+  }
+  .b1 { left: 75%; }
+  .b2 { left: 50%; }
+  .b3 { left: 25%; }
+  .route-5 { grid-column: 4; grid-row: 2; }
+  .route-6 { grid-column: 3; grid-row: 2; }
+  .route-7 { grid-column: 2; grid-row: 2; }
+  .route-8 { grid-column: 1; grid-row: 2; }
+
+  .vault-grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 64px;
+    align-items: center;
+  }
+  .vault-tree {
+    border-left: 2px solid rgba(122,168,255,0.55);
+    padding-left: 34px;
+    margin-top: 36px;
+  }
+  .folder {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 13px 0;
+  }
+  .folder-icon {
+    width: 50px;
+    height: 34px;
+    border: 1px solid rgba(245,242,234,0.42);
+    border-radius: 5px;
+    position: relative;
+  }
+  .folder-icon::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: -8px;
+    width: 22px;
+    height: 10px;
+    border: 1px solid rgba(245,242,234,0.42);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: var(--dark);
+  }
+  .folder span {
+    font-family: var(--font-heading);
+    font-size: 25px;
+  }
+  .prompt-panel {
+    border: 1px solid rgba(121,214,164,0.48);
+    background: linear-gradient(180deg, rgba(121,214,164,0.10), rgba(255,255,255,0.025));
+    border-radius: 18px;
+    padding: 36px;
+  }
+  .prompt-panel .code {
+    margin-top: 28px;
+    padding: 26px;
+    background: rgba(0,0,0,0.28);
+    border-radius: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 20px;
+    line-height: 1.55;
+    color: #d9f8e7;
+    border-left: 3px solid var(--green);
+  }
+
+  .mcp-diagram {
+    display: grid;
+    grid-template-columns: 1fr 0.72fr 1fr;
+    gap: 36px;
+    align-items: center;
+  }
+  .tool-stack,
+  .agent-stack {
+    display: grid;
+    gap: 18px;
+  }
+  .tool-row {
+    display: grid;
+    grid-template-columns: 74px 1fr;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .tool-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--black);
+    background: var(--tone, var(--orange));
+  }
+  .tool-logo.wide {
+    font-size: 15px;
+    letter-spacing: -0.04em;
+  }
+  .tool-row h3 { font-size: 24px; }
+  .tool-row p { font-size: 16px; line-height: 1.35; }
+  .platform-link {
+    color: var(--white);
+    text-decoration: none;
+  }
+  .platform-link:hover {
+    color: var(--orange);
+  }
+  .mcp-hub {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    border: 1px solid rgba(255,107,43,0.6);
+    background:
+      radial-gradient(circle, rgba(255,107,43,0.20), rgba(255,107,43,0.04) 58%, transparent 60%),
+      rgba(255,255,255,0.025);
+    box-shadow: 0 0 110px rgba(255,107,43,0.2);
+  }
+  .mcp-hub b {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: clamp(48px, 4vw, 72px);
+    color: var(--orange);
+    letter-spacing: -0.05em;
+  }
+  .mcp-hub span {
+    color: var(--muted);
+    font-size: 17px;
+  }
+  .mcp-slide-ru .section-head {
+    margin-bottom: 34px;
+  }
+  .mcp-slide-ru .mcp-diagram {
+    grid-template-columns: 0.82fr 0.56fr 0.82fr 1.08fr;
+    gap: 24px;
+    align-items: center;
+  }
+  .graph-card {
+    display: grid;
+    gap: 20px;
+    align-self: center;
+    margin-top: -170px;
+  }
+  .graph-frame {
+    height: 350px;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f7f3ea;
+    box-shadow: 0 28px 90px rgba(0,0,0,0.38);
+  }
+  .graph-frame img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+  .graph-card-body {
+    padding: 2px 0 0 18px;
+    border-left: 3px solid var(--cyan);
+  }
+  .graph-card-body .tag {
+    margin-bottom: 9px;
+    color: var(--orange);
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .graph-card-body b {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--white);
+    font-family: var(--font-heading);
+    font-size: 24px;
+    line-height: 1.05;
+  }
+  .graph-card-body p {
+    max-width: 440px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.38;
+  }
+
+  .context-map {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .context-file {
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 18px;
+    background: #111111;
+    overflow: hidden;
+    box-shadow: 0 32px 90px rgba(0,0,0,0.38);
+  }
+  .file-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(255,107,43,0.24);
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .window-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+  }
+  .r { background: #ff5f56; }
+  .y { background: #ffbd2e; }
+  .g { background: #27c93f; }
+  .file-body {
+    padding: 32px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 21px;
+    line-height: 1.65;
+  }
+  .key { color: var(--cyan); }
+  .val { color: #8ff4b9; }
+  .orange { color: var(--orange); }
+  .comment { color: #6f6b66; }
+  .context-list {
+    margin-top: 34px;
+    display: grid;
+    gap: 30px;
+  }
+  .context-item {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .context-item b {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255,107,43,0.13);
+    border: 1px solid rgba(255,107,43,0.36);
+    color: var(--orange);
+    font-family: var(--font-heading);
+  }
+  .context-item h3 { margin-bottom: 4px; font-size: 24px; }
+  .context-item p { font-size: 17px; line-height: 1.45; }
+
+  .skills-lane {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-top: 54px;
+  }
+  .skill {
+    padding-top: 22px;
+    border-top: 3px solid var(--tone);
+  }
+  .skill .tag {
+    color: var(--tone);
+    font-family: var(--font-heading);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .skill h3 { min-height: 62px; margin-bottom: 16px; }
+  .skill p { font-size: 17px; line-height: 1.45; }
+  .skill-code {
+    margin-top: 46px;
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.045);
+    padding: 30px 36px;
+    display: grid;
+    grid-template-columns: 0.6fr 1fr;
+    gap: 36px;
+    align-items: center;
+  }
+  .skill-code pre {
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #e7e1d8;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .loop-grid {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .loop-rings {
+    position: relative;
+    height: 560px;
+  }
+  .ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .ring.r1 { width: 520px; height: 520px; }
+  .ring.r2 { width: 370px; height: 370px; border-color: rgba(255,107,43,0.35); }
+  .ring.r3 { width: 210px; height: 210px; border-color: rgba(121,214,164,0.35); }
+  .ring-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-center b {
+    font-family: var(--font-heading);
+    font-size: 44px;
+    color: var(--orange);
+  }
+  .loop-point {
+    position: absolute;
+    width: 168px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    background: rgba(8,9,8,0.82);
+    font-family: var(--font-heading);
+    font-size: 17px;
+    text-align: center;
+  }
+  .p1 { left: 50%; top: 0; transform: translateX(-50%); color: var(--blue); }
+  .p2 { right: 0; top: 40%; color: var(--green); }
+  .p3 { left: 50%; bottom: 0; transform: translateX(-50%); color: var(--amber); }
+  .p4 { left: 0; top: 40%; color: var(--cyan); }
+  .loop-steps {
+    display: grid;
+    gap: 16px;
+  }
+  .loop-step {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 20px;
+    padding: 19px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .loop-step b {
+    font-family: var(--font-heading);
+    color: var(--orange);
+    font-size: 18px;
+  }
+  .loop-step h3 { font-size: 25px; margin-bottom: 5px; }
+  .loop-step p { font-size: 17px; line-height: 1.4; }
+
+  .process {
+    display: grid;
+    grid-template-columns: 1fr 0.9fr;
+    gap: 62px;
+    align-items: start;
+  }
+  .process-list {
+    display: grid;
+    gap: 18px;
+  }
+  .process-step {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 19px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .process-step b {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255,107,43,0.13);
+    color: var(--orange);
+    font-family: var(--font-heading);
+  }
+  .process-step h3 { font-size: 23px; margin-bottom: 5px; }
+  .process-step p { font-size: 16px; line-height: 1.35; }
+  .cmd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--green);
+    border: 1px solid rgba(121,214,164,0.36);
+    border-radius: 999px;
+    padding: 8px 12px;
+  }
+  .command-box {
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+    padding: 34px;
+  }
+  .command-box h3 {
+    margin-bottom: 22px;
+  }
+  .command-row {
+    display: grid;
+    grid-template-columns: 118px 1fr;
+    gap: 18px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .command-row:last-child { border-bottom: none; }
+  .command-row b {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--orange);
+  }
+  .command-row span {
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .process-slide .layout {
+    min-height: auto;
+    width: min(1680px, 100%);
+  }
+  .process-slide .process {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 52px;
+    align-items: center;
+  }
+  .process-slide .kicker {
+    margin-bottom: 14px;
+  }
+  .process-slide h2 {
+    font-size: clamp(48px, 4.7vw, 82px);
+  }
+  .process-slide .process-list {
+    gap: 7px;
+  }
+  .process-slide .process-step {
+    grid-template-columns: 52px 1fr auto;
+    gap: 16px;
+    padding: 11px 0;
+  }
+  .process-slide .process-step b {
+    width: 38px;
+    height: 38px;
+  }
+  .process-slide .process-step h3 {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+  .process-slide .process-step p {
+    font-size: 15px;
+    line-height: 1.28;
+  }
+  .process-slide .cmd {
+    padding: 7px 11px;
+    font-size: 15px;
+  }
+  .process-slide .command-box {
+    padding: 30px 34px;
+  }
+  .process-slide .command-row {
+    grid-template-columns: 112px 1fr;
+    padding: 13px 0;
+  }
+  .process-slide .command-row span {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 72px;
+    align-items: center;
+  }
+  .contact-lead {
+    max-width: 900px;
+    margin-top: 26px;
+    color: #d0c7ba;
+    font-size: clamp(21px, 1.8vw, 28px);
+  }
+  .contact-list {
+    margin-top: 46px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .contact-list div {
+    border-top: 2px solid var(--tone, var(--orange));
+    padding-top: 18px;
+  }
+  .contact-list b {
+    display: block;
+    margin-bottom: 8px;
+    font-family: var(--font-heading);
+    color: var(--white);
+    font-size: 21px;
+  }
+  .contact-list span {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.45;
+  }
+  .contact-card {
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px;
+    padding: 30px;
+    background:
+      radial-gradient(circle at 50% 18%, rgba(112,215,232,0.16), transparent 36%),
+      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
+    box-shadow: 0 34px 100px rgba(0,0,0,0.36);
+  }
+  .qr-shell {
+    display: block;
+    padding: 22px;
+    border-radius: 22px;
+    background: #f7f3ea;
+    box-shadow: inset 0 0 0 1px rgba(8,9,8,0.08);
+  }
+  .telegram-qr {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .contact-handle {
+    display: block;
+    margin-top: 26px;
+    color: var(--white);
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .contact-card p {
+    margin-top: 8px;
+    font-size: 17px;
+  }
+  .contact-actions {
+    margin-top: 26px;
+    display: grid;
+    gap: 12px;
+  }
+  .contact-link {
+    display: block;
+    padding: 14px 16px;
+    border: 1px solid rgba(255,107,43,0.42);
+    border-radius: 12px;
+    color: var(--orange);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .contact-link.secondary {
+    border-color: rgba(121,214,164,0.36);
+    color: var(--green);
+  }
+
+  .final {
+    text-align: center;
+  }
+  .final h1 {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .final p {
+    margin: 34px auto 0;
+    max-width: 940px;
+    font-size: 25px;
+    color: #d0c7ba;
+  }
+  .final-bar {
+    margin: 62px auto 0;
+    width: min(900px, 100%);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .final-bar div {
+    padding: 20px 18px;
+    border-right: 1px solid rgba(255,255,255,0.12);
+    font-family: var(--font-heading);
+    color: var(--muted);
+  }
+  .final-bar div:last-child { border-right: none; }
+  .final-bar b {
+    display: block;
+    color: var(--orange);
+    margin-bottom: 5px;
+  }
+
+  .anim-1, .anim-2, .anim-3, .anim-4, .anim-5 { opacity: 0; transform: translateY(22px); }
+  .slide.active .anim-1 { animation: fadeUp 0.55s 0.05s ease forwards; }
+  .slide.active .anim-2 { animation: fadeUp 0.55s 0.16s ease forwards; }
+  .slide.active .anim-3 { animation: fadeUp 0.55s 0.28s ease forwards; }
+  .slide.active .anim-4 { animation: fadeUp 0.55s 0.40s ease forwards; }
+  .slide.active .anim-5 { animation: fadeUp 0.55s 0.52s ease forwards; }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 900px) {
+    html, body { cursor: auto; }
+    .cursor-dot,
+    .cursor-ring { display: none; }
+    body::before { background-size: 52px 52px; }
+    .slide {
+      padding: 42px 22px 96px;
+      overflow-y: auto;
+      place-items: start stretch;
+      align-content: start;
+      -webkit-overflow-scrolling: touch;
+    }
+    .layout { width: 100%; min-height: auto; }
+    .kicker { font-size: 10px; margin-bottom: 14px; }
+    h1 { font-size: clamp(50px, 15vw, 68px); }
+    h2 { font-size: clamp(40px, 12vw, 56px); line-height: 0.98; }
+    h3 { font-size: 22px; }
+    p { font-size: 16px; }
+    .hero-subtitle { margin-top: 20px; font-size: 18px; }
+    .hero-strip { margin-top: 34px; gap: 9px; }
+    .pill { padding: 9px 11px; font-size: 12px; }
+    .pipe { font-size: 18px; }
+    .section-head { margin-bottom: 28px; }
+    .section-head p { margin-top: 16px; }
+    .split,
+    .vault-grid,
+    .context-map,
+    .loop-grid,
+    .process,
+    .mcp-diagram,
+    .skill-code { grid-template-columns: 1fr; }
+    .flow-board,
+    .skills-lane { grid-template-columns: 1fr; }
+    .route-5,
+    .route-6,
+    .route-7,
+    .route-8 { grid-column: auto; grid-row: auto; }
+    .flow-card { min-height: auto; padding: 20px; border-radius: 14px; }
+    .flow-num { margin-bottom: 12px; }
+    .flow-card p { font-size: 15px; }
+    .flow-icon { right: 18px; bottom: 12px; font-size: 38px; }
+    .flow-arrow { display: none; }
+    .folder { grid-template-columns: 46px 1fr; padding: 9px 0; }
+    .folder-icon { width: 36px; height: 26px; }
+    .folder-icon::before { width: 17px; height: 8px; top: -7px; }
+    .folder span { font-size: 20px; }
+    .prompt-panel { padding: 22px; }
+    .prompt-panel .code { padding: 18px; font-size: 15px; }
+    .mcp-diagram { gap: 24px; }
+    .mcp-slide-ru .mcp-diagram { grid-template-columns: 1fr; }
+    .graph-card { margin-top: 0; }
+    .graph-frame { height: 260px; }
+    .mcp-hub { width: min(280px, 72vw); margin: 0 auto; }
+    .tool-stack,
+    .agent-stack { gap: 8px; }
+    .tool-row { grid-template-columns: 56px 1fr; gap: 14px; padding: 14px 0; }
+    .tool-logo { width: 44px; height: 44px; border-radius: 12px; font-size: 14px; }
+    .tool-logo.wide { font-size: 11px; }
+    .tool-row h3 { font-size: 20px; }
+    .tool-row p { font-size: 14px; }
+    .context-list { margin-top: 24px; gap: 22px; }
+    .context-item { grid-template-columns: 44px 1fr; gap: 16px; }
+    .context-item b { width: 44px; height: 44px; }
+    .context-item h3 { font-size: 21px; }
+    .context-item p { font-size: 15px; }
+    .context-file { margin-top: 8px; }
+    .file-header { padding: 12px 16px; font-size: 14px; }
+    .window-dot { width: 11px; height: 11px; }
+    .file-body { padding: 18px; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+    .skills-lane { gap: 18px; margin-top: 28px; }
+    .skill { padding-top: 16px; }
+    .skill h3 { min-height: 0; margin-bottom: 8px; }
+    .skill p { font-size: 15px; }
+    .skill-code { padding: 22px; gap: 18px; }
+    .skill-code pre { font-size: 14px; }
+    .loop-rings { height: 360px; transform: none; margin-bottom: 0; }
+    .ring.r1 { width: 320px; height: 320px; }
+    .ring.r2 { width: 230px; height: 230px; }
+    .ring.r3 { width: 130px; height: 130px; }
+    .ring-center b { font-size: 32px; }
+    .loop-point { width: 126px; padding: 10px; font-size: 13px; }
+    .loop-step { grid-template-columns: 52px 1fr; gap: 14px; padding: 13px 0; }
+    .loop-step h3 { font-size: 21px; }
+    .loop-step p { font-size: 15px; }
+    .process-slide .process { grid-template-columns: 1fr; gap: 26px; }
+    .process-slide h2 { font-size: clamp(42px, 13vw, 58px); }
+    .process-slide .process-step { grid-template-columns: 42px 1fr; padding: 10px 0; }
+    .process-slide .process-step b { width: 34px; height: 34px; }
+    .process-slide .process-step h3 { font-size: 18px; }
+    .process-slide .process-step p { font-size: 14px; }
+    .process-step { grid-template-columns: 48px 1fr; }
+    .process-step .cmd { grid-column: 2; width: max-content; }
+    .process-slide .command-box { padding: 22px; }
+    .process-slide .command-row,
+    .command-row { grid-template-columns: 1fr; gap: 4px; padding: 11px 0; }
+    .process-slide .command-row span,
+    .command-row span { font-size: 14px; }
+    .contact-layout,
+    .contact-list { grid-template-columns: 1fr; }
+    .contact-layout { gap: 28px; }
+    .contact-lead { margin-top: 18px; font-size: 18px; }
+    .contact-list { margin-top: 28px; }
+    .contact-card { width: min(330px, 100%); margin: 0 auto 44px; padding: 22px; }
+    .qr-shell { padding: 14px; }
+    .contact-handle { margin-top: 18px; font-size: 24px; }
+    .contact-actions { margin-top: 18px; }
+    .nav { display: none; }
+    .arrows { display: flex; right: 18px; bottom: 14px; }
+    .arrow { width: 40px; height: 40px; font-size: 18px; }
+    .counter { right: 116px; bottom: 26px; font-size: 11px; }
+  }
+
+  @media (max-width: 430px) {
+    .slide { padding: 34px 18px 90px; }
+    .contact-card { width: min(300px, 100%); }
+    .mcp-hub { width: min(240px, 68vw); }
+    .loop-rings { height: 330px; }
+    .ring.r1 { width: 290px; height: 290px; }
+    .ring.r2 { width: 210px; height: 210px; }
+  }
+</style>
+</head>
+<body>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="progress" id="progress"></div>
+<div class="counter"><b id="currentSlide">01</b> / <span id="totalSlides">09</span></div>
+<div class="nav" id="nav"></div>
+<div class="arrows">
+  <button class="arrow" id="prevBtn" aria-label="Предыдущий слайд">&larr;</button>
+  <button class="arrow" id="nextBtn" aria-label="Следующий слайд">&rarr;</button>
+</div>
+
+<main class="slides">
+  <section class="slide active hero" data-index="0">
+    <div class="hero-mark">AI</div>
+    <div class="layout">
+      <div class="kicker anim-1">Воркшоп Network School</div>
+      <h1 class="anim-2">Персональная<br><em>AI-система</em></h1>
+      <p class="hero-subtitle anim-3">Соедини инструменты вокруг своего реального контекста и собери один полезный workflow, которым ты действительно будешь пользоваться.</p>
+      <div class="hero-strip anim-4">
+        <span class="pill">Obsidian</span><span class="pipe">-></span>
+        <span class="pill">Claude Code / Codex</span><span class="pipe">-></span>
+        <span class="pill accent">MCP</span><span class="pipe">-></span>
+        <span class="pill">Навыки</span><span class="pipe">-></span>
+        <span class="pill">Вывод в Telegram</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-index="1">
+    <div class="layout">
+      <div class="section-head">
+        <div class="kicker anim-1">Логика воркшопа</div>
+        <h2 class="anim-2">Не набор инструментов.<br><em>А связанный цикл.</em></h2>
+        <p class="anim-3">Система начинается с твоих заметок, проходит через AI-агента, подключает инструменты через MCP и возвращает полезный результат в ежедневный интерфейс.</p>
+      </div>
+      <div class="flow-board anim-4">
+        <div class="flow-arrow a1"></div><div class="flow-arrow a2"></div><div class="flow-arrow a3"></div>
+        <div class="flow-arrow down"></div>
+        <div class="flow-arrow leftward b1"></div><div class="flow-arrow leftward b2"></div><div class="flow-arrow leftward b3"></div>
+        <article class="flow-card" style="--tone: var(--blue)">
+          <div class="flow-num">Шаг 01</div><h3>Obsidian</h3>
+          <p>Создай vault, структуру и место, где лежат заметки и контекст.</p><div class="flow-icon">OB</div>
+        </article>
+        <article class="flow-card" style="--tone: var(--orange)">
+          <div class="flow-num">Шаг 02</div><h3>Claude / Codex</h3>
+          <p>Используй агента как движок системы: он читает, пишет и строит.</p><div class="flow-icon">AI</div>
+        </article>
+        <article class="flow-card" style="--tone: var(--cyan)">
+          <div class="flow-num">Шаг 03</div><h3>MCP-серверы</h3>
+          <p>Подключи платформы: заметки, код, задачи, поиск, календарь, Telegram.</p><div class="flow-icon">MCP</div>
+        </article>
+        <article class="flow-card" style="--tone: var(--green)">
+          <div class="flow-num">Шаг 04</div><h3>Контекст</h3>
+          <p>Личный контекст, проекты, контакты, заметки и файлы.</p><div class="flow-icon">CTX</div>
+        </article>
+        <article class="flow-card route-5" style="--tone: var(--amber)">
+          <div class="flow-num">Шаг 05</div><h3>Навыки</h3>
+          <p>Повторяемые возможности: саммари, управление проектами, ревью.</p><div class="flow-icon">SK</div>
+        </article>
+        <article class="flow-card route-6" style="--tone: var(--white)">
+          <div class="flow-num">Шаг 06</div><h3>GitHub-синхронизация</h3>
+          <p>Бэкап, история версий, issues и память агента для работы.</p><div class="flow-icon">GH</div>
+        </article>
+        <article class="flow-card route-7" style="--tone: var(--blue)">
+          <div class="flow-num">Шаг 07</div><h3>Telegram-бот</h3>
+          <p>Простой интерфейс, где люди задают вопросы и получают результат.</p><div class="flow-icon">TG</div>
+        </article>
+        <article class="flow-card route-8" style="--tone: var(--red)">
+          <div class="flow-num">Шаг 08</div><h3>POS MVP</h3>
+          <p>Маленькая рабочая система вокруг твоих инструментов и реальной работы.</p><div class="flow-icon">GO</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-index="2">
+    <div class="layout vault-grid">
+      <div>
+        <div class="kicker anim-1">Шаг 1</div>
+        <h2 class="anim-2">Создай простой<br><em>Obsidian vault</em></h2>
+        <p class="anim-3">Vault — не эстетика продуктивности. Это место, где AI может найти твою память, проекты, встречи, людей, правила и результаты.</p>
+        <div class="vault-tree anim-4">
+          <div class="folder"><div class="folder-icon"></div><span>00-Inbox</span></div>
+          <div class="folder"><div class="folder-icon"></div><span>10-Проекты</span></div>
+          <div class="folder"><div class="folder-icon"></div><span>20-Areas</span></div>
+          <div class="folder"><div class="folder-icon"></div><span>40-Meetings</span></div>
+          <div class="folder"><div class="folder-icon"></div><span>60-Rules</span></div>
+          <div class="folder"><div class="folder-icon"></div><span>99-Archive</span></div>
+        </div>
+      </div>
+      <div class="prompt-panel anim-5">
+        <div class="kicker">Команда бота</div>
+        <h3>Используй /vault</h3>
+        <p>Команда отправляет guided prompt: структура vault, правила именования, типы заметок и чеклист первой недели.</p>
+        <div class="code">Цель: сделать заметки понятными людям и AI-агентам.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide mcp-slide-ru" data-index="3">
+    <div class="layout">
+      <div class="section-head">
+        <div class="kicker anim-1">Шаг 2</div>
+        <h2 class="anim-2">Подключи платформы<br><em>через MCP</em></h2>
+        <p class="anim-3">MCP — это мостовой слой. Он позволяет AI-агенту пользоваться внешними инструментами и источниками данных без кастомной интеграции под каждую платформу.</p>
+      </div>
+      <div class="mcp-diagram anim-4">
+        <div class="tool-stack">
+          <div class="tool-row"><div class="tool-logo" style="--tone: var(--blue)">OB</div><div><h3><a class="platform-link" href="https://obsidian.md/" target="_blank" rel="noopener">Obsidian</a></h3><p>Заметки, проекты, контекст, правила.</p></div></div>
+          <div class="tool-row"><div class="tool-logo" style="--tone: var(--white)">GH</div><div><h3><a class="platform-link" href="https://github.com/" target="_blank" rel="noopener">GitHub</a></h3><p>Задачи, история версий, память проекта.</p></div></div>
+          <div class="tool-row"><div class="tool-logo wide" style="--tone: var(--cyan)">exa.ai</div><div><h3><a class="platform-link" href="https://exa.ai/" target="_blank" rel="noopener">exa.ai</a></h3><p>Исследования, внешний контекст, свежие данные.</p></div></div>
+        </div>
+        <div class="mcp-hub"><div><b>MCP</b><span>стандартный слой коннекторов</span></div></div>
+        <div class="agent-stack">
+          <div class="tool-row"><div class="tool-logo" style="--tone: var(--orange)">CC</div><div><h3><a class="platform-link" href="https://code.claude.com/docs" target="_blank" rel="noopener">Claude Code</a></h3><p>Читает контекст и строит workflow.</p></div></div>
+          <div class="tool-row"><div class="tool-logo" style="--tone: var(--green)">CX</div><div><h3><a class="platform-link" href="https://developers.openai.com/codex/" target="_blank" rel="noopener">Codex</a></h3><p>Реализует, проверяет и документирует изменения.</p></div></div>
+          <div class="tool-row"><div class="tool-logo" style="--tone: var(--amber)">TG</div><div><h3><a class="platform-link" href="https://telegram.org/" target="_blank" rel="noopener">Telegram</a></h3><p>Интерфейс для вопросов и быстрых результатов.</p></div></div>
+        </div>
+        <div class="graph-card anim-5">
+          <div class="graph-frame">
+            <img src="assets/obsidian-graph-context.png" alt="Obsidian Graph View AI Studio">
+          </div>
+          <div class="graph-card-body">
+            <div class="tag">Obsidian Graph View</div>
+            <b>Живая карта контекста</b>
+            <p>Граф Obsidian показывает, где у AI лежит память: проекты, заметки, правила, связи и рабочие зоны.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-index="4">
+    <div class="layout context-map">
+      <div>
+        <div class="kicker anim-1">Шаг 3</div>
+        <h2 class="anim-2">Дай агенту<br><em>контекст</em></h2>
+        <p class="anim-3">Полезной системе нужен личный контекст, контекст проектов, контакты, существующие заметки и примеры хорошего результата.</p>
+        <div class="context-list anim-4">
+          <div class="context-item"><b>01</b><div><h3>Личный контекст</h3><p>Кто ты, как думаешь, что для тебя важно.</p></div></div>
+          <div class="context-item"><b>02</b><div><h3>Контекст проекта</h3><p>Что ты строишь, где блокеры, какие приоритеты активны.</p></div></div>
+          <div class="context-item"><b>03</b><div><h3>Рабочие правила</h3><p>Как агент должен обновлять память, GitHub и заметки после работы.</p></div></div>
+        </div>
+      </div>
+      <div class="context-file anim-5">
+        <div class="file-header"><span class="window-dot r"></span><span class="window-dot y"></span><span class="window-dot g"></span><span>CLAUDE.md</span></div>
+        <div class="file-body">
+          <div class="comment"># личный AI-контекст</div>
+          <div><span class="key">identity:</span> <span class="val">builder, learner, operator</span></div>
+          <div><span class="key">work_style:</span> <span class="val">practical, visual, iterative</span></div>
+          <div><span class="key">tools:</span> <span class="orange">Obsidian, GitHub, Telegram</span></div>
+          <br>
+          <div><span class="key">rules:</span></div>
+          <div> - сохраняй прогресс после значимой работы</div>
+          <div> - спрашивай перед разрушительными действиями</div>
+          <div> - делай результаты короткими и применимыми</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-index="5">
+    <div class="layout">
+      <div class="section-head">
+        <div class="kicker anim-1">Шаг 4</div>
+        <h2 class="anim-2">Преврати промпты<br><em>в навыки</em></h2>
+        <p class="anim-3">Навык — это повторяемый способ выполнить конкретную задачу. Так не нужно каждый раз объяснять один и тот же workflow с нуля.</p>
+      </div>
+      <div class="skills-lane anim-4">
+        <div class="skill" style="--tone: var(--cyan)"><div class="tag">Навык 01</div><h3>Саммари</h3><p>Превращает встречи, заметки или ссылки в понятный decision record.</p></div>
+        <div class="skill" style="--tone: var(--amber)"><div class="tag">Навык 02</div><h3>Управление проектом</h3><p>Создает задачи, обновляет issues и держит статус читаемым.</p></div>
+        <div class="skill" style="--tone: var(--green)"><div class="tag">Навык 03</div><h3>Ежедневный обзор</h3><p>Сохраняет, что изменилось, что дальше и где блокеры.</p></div>
+        <div class="skill" style="--tone: var(--orange)"><div class="tag">Навык 04</div><h3>Ответ в Telegram</h3><p>Отвечает через бота, используя контекст из Obsidian.</p></div>
+      </div>
+      <div class="skill-code anim-5">
+        <div><h3>Используй /rules</h3><p>Команда дает post-task protocol: как сохранять прогресс в Obsidian, GitHub и session logs.</p></div>
+        <pre>После каждого значимого шага:
+- обнови TODO.md
+- обнови MEMORY.md
+- добавь запись в CHANGELOG
+- прокомментируй GitHub issue, если нужно</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" data-index="6">
+    <div class="layout loop-grid">
+      <div class="loop-rings anim-1">
+        <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+        <div class="ring-center"><b>Цикл</b><p>не теория</p></div>
+        <div class="loop-point p1">Спроси в Telegram</div>
+        <div class="loop-point p2">Прочитай контекст</div>
+        <div class="loop-point p3">Собери результат</div>
+        <div class="loop-point p4">Сохрани память</div>
+      </div>
+      <div>
+        <div class="kicker anim-2">Шаг 5</div>
+        <h2 class="anim-3">Замкни цикл<br><em>через результат</em></h2>
+        <div class="loop-steps anim-4">
+          <div class="loop-step"><b>01</b><div><h3>Задай вопрос</h3><p>Используй Telegram как простой интерфейс к системе.</p></div></div>
+          <div class="loop-step"><b>02</b><div><h3>Claude читает контекст</h3><p>Ответ должен приходить из vault, правил, файлов проекта и состояния инструментов.</p></div></div>
+          <div class="loop-step"><b>03</b><div><h3>AI отвечает или действует</h3><p>Система может суммировать, планировать, писать, кодить или готовить ресурс.</p></div></div>
+          <div class="loop-step"><b>04</b><div><h3>GitHub хранит историю</h3><p>Бэкап, комментарии в issue, changelog и версионированная память агента.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide process-slide" data-index="7">
+    <div class="layout process">
+      <div>
+        <div class="kicker anim-1">Рекомендуемый процесс</div>
+        <h2 class="anim-2">Начни маленько.<br><em>Сохрани цикл.</em></h2>
+        <div class="process-list anim-3">
+          <div class="process-step"><b>1</b><div><h3>Создай простой Obsidian vault</h3><p>Начни со структуры, понятной людям и AI.</p></div><span class="cmd">/vault</span></div>
+          <div class="process-step"><b>2</b><div><h3>Создай личный AI context file</h3><p>Передай агенту стиль работы, цели, стек и предпочтения.</p></div><span class="cmd">/claude</span></div>
+          <div class="process-step"><b>3</b><div><h3>Добавь правила сохранения прогресса</h3><p>Пусть работа переживает чат и возвращается в Obsidian или GitHub.</p></div><span class="cmd">/rules</span></div>
+          <div class="process-step"><b>4</b><div><h3>Выбери один повторяемый workflow</h3><p>План недели, research, GitHub issues, meeting summary, product audit.</p></div></div>
+          <div class="process-step"><b>5</b><div><h3>Запусти на реальной работе</h3><p>Улучшай prompt только после проверки на настоящей задаче.</p></div></div>
+          <div class="process-step"><b>6</b><div><h3>Подключи следующую платформу</h3><p>Заметки, задачи, календарь, код, поиск, GitHub, Telegram или твой стек.</p></div></div>
+        </div>
+      </div>
+      <aside class="command-box anim-4">
+        <h3>Полезные команды бота</h3>
+        <div class="command-row"><b>/vault</b><span>Промпт для создания простой структуры Obsidian vault.</span></div>
+        <div class="command-row"><b>/claude</b><span>Промпт для CLAUDE.md / AGENTS.md с личным контекстом.</span></div>
+        <div class="command-row"><b>/rules</b><span>Post-task protocol для сохранения прогресса в Obsidian и GitHub.</span></div>
+        <div class="command-row"><b>/pirajoke</b><span>Полный AI starter pack: ссылки, prompts, skills, MCP, Superpowers, Exa, GitHub workflows и аудиты.</span></div>
+        <div class="command-row"><b>/job</b><span>Реферальные возможности в tech, finance и venture компаниях.</span></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slide" data-index="8">
+    <div class="layout contact-layout">
+      <div>
+        <div class="kicker anim-1">Контакт</div>
+        <h2 class="anim-2">Глубокие интеграции<br><em>и бизнес-автоматизация.</em></h2>
+        <p class="contact-lead anim-3">Я могу помочь спроектировать и внедрить AI workflows вокруг реального бизнес-стека: MCP-серверы, Obsidian, GitHub, Telegram-боты, CRM, календари, внутренние инструменты и кастомные автоматизации.</p>
+        <div class="contact-list anim-4">
+          <div style="--tone: var(--cyan)">
+            <b>Консалтинг</b>
+            <span>Превратить разрозненные инструменты в один практический operating loop для команды или проекта.</span>
+          </div>
+          <div style="--tone: var(--green)">
+            <b>Внедрение</b>
+            <span>Собрать рабочие прототипы, интеграции, prompts, agents и automation workflows.</span>
+          </div>
+        </div>
+      </div>
+
+      <aside class="contact-card anim-5">
+        <a class="qr-shell" href="https://t.me/PIRAJOKE" target="_blank" rel="noopener" aria-label="Open Telegram @PIRAJOKE">
+          <svg class="telegram-qr" viewBox="0 0 33 33" role="img" aria-label="Telegram QR code for @PIRAJOKE" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="qrGradientPersonalAi" x1="3" y1="3" x2="30" y2="30" gradientUnits="userSpaceOnUse"><stop stop-color="#0f3b9f"/><stop offset="1" stop-color="#6d138f"/></linearGradient></defs>
+            <rect width="33" height="33" rx="3" fill="#fff"/>
+            <path fill="url(#qrGradientPersonalAi)" d="M2 2h7v1H2zM10 2h1v1H10zM17 2h1v1H17zM19 2h1v1H19zM22 2h1v1H22zM24 2h7v1H24zM2 3h1v1H2zM8 3h1v1H8zM13 3h1v1H13zM16 3h1v1H16zM18 3h5v1H18zM24 3h1v1H24zM30 3h1v1H30zM2 4h1v1H2zM4 4h3v1H4zM8 4h1v1H8zM12 4h1v1H12zM14 4h1v1H14zM16 4h1v1H16zM18 4h1v1H18zM22 4h1v1H22zM24 4h1v1H24zM26 4h3v1H26zM30 4h1v1H30zM2 5h1v1H2zM4 5h3v1H4zM8 5h1v1H8zM10 5h3v1H10zM15 5h1v1H15zM17 5h2v1H17zM20 5h2v1H20zM24 5h1v1H24zM26 5h3v1H26zM30 5h1v1H30zM2 6h1v1H2zM4 6h3v1H4zM8 6h1v1H8zM12 6h3v1H12zM16 6h2v1H16zM19 6h3v1H19zM24 6h1v1H24zM26 6h3v1H26zM30 6h1v1H30zM2 7h1v1H2zM8 7h1v1H8zM11 7h3v1H11zM15 7h1v1H15zM17 7h2v1H17zM20 7h2v1H20zM24 7h1v1H24zM30 7h1v1H30zM2 8h7v1H2zM10 8h1v1H10zM12 8h1v1H12zM14 8h1v1H14zM16 8h1v1H16zM18 8h1v1H18zM20 8h1v1H20zM22 8h1v1H22zM24 8h7v1H24zM12 9h2v1H12zM15 9h2v1H15zM18 9h1v1H18zM22 9h1v1H22zM4 10h1v1H4zM6 10h3v1H6zM10 10h1v1H10zM12 10h1v1H12zM15 10h1v1H15zM17 10h1v1H17zM21 10h3v1H21zM27 10h1v1H27zM30 10h1v1H30zM2 11h2v1H2zM5 11h1v1H5zM7 11h1v1H7zM12 11h1v1H12zM14 11h1v1H14zM16 11h1v1H16zM21 11h3v1H21zM27 11h1v1H27zM30 11h1v1H30zM2 12h1v1H2zM4 12h3v1H4zM8 12h1v1H8zM11 12h1v1H11zM16 12h2v1H16zM19 12h1v1H19zM21 12h2v1H21zM28 12h3v1H28zM2 13h1v1H2zM5 13h2v1H5zM10 13h1v1H10zM13 13h1v1H13zM16 13h5v1H16zM22 13h5v1H22zM29 13h1v1H29zM3 14h1v1H3zM6 14h3v1H6zM13 14h1v1H13zM15 14h2v1H15zM18 14h2v1H18zM21 14h2v1H21zM24 14h2v1H24zM28 14h1v1H28zM3 15h2v1H3zM6 15h2v1H6zM11 15h1v1H11zM16 15h1v1H16zM18 15h3v1H18zM23 15h3v1H23zM2 16h1v1H2zM5 16h1v1H5zM7 16h3v1H7zM11 16h3v1H11zM15 16h4v1H15zM20 16h1v1H20zM22 16h2v1H22zM25 16h1v1H25zM28 16h3v1H28zM2 17h1v1H2zM6 17h2v1H6zM10 17h2v1H10zM14 17h2v1H14zM17 17h1v1H17zM21 17h2v1H21zM24 17h2v1H24zM30 17h1v1H30zM2 18h4v1H2zM7 18h2v1H7zM10 18h1v1H10zM13 18h1v1H13zM16 18h1v1H16zM19 18h1v1H19zM22 18h3v1H22zM26 18h2v1H26zM29 18h1v1H29zM3 19h5v1H3zM9 19h2v1H9zM12 19h1v1H12zM15 19h1v1H15zM18 19h1v1H18zM20 19h2v1H20zM23 19h1v1H23zM27 19h4v1H27zM2 20h1v1H2zM5 20h1v1H5zM8 20h2v1H8zM11 20h2v1H11zM16 20h1v1H16zM19 20h1v1H19zM23 20h1v1H23zM25 20h6v1H25zM3 21h5v1H3zM9 21h3v1H9zM14 21h1v1H14zM16 21h1v1H16zM20 21h3v1H20zM24 21h2v1H24zM2 22h1v1H2zM4 22h3v1H4zM8 22h1v1H8zM11 22h3v1H11zM16 22h1v1H16zM18 22h3v1H18zM22 22h9v1H22zM10 23h2v1H10zM14 23h2v1H14zM17 23h4v1H17zM22 23h1v1H22zM26 23h1v1H26zM29 23h2v1H29zM2 24h7v1H2zM11 24h5v1H11zM17 24h2v1H17zM21 24h2v1H21zM24 24h1v1H24zM26 24h1v1H26zM28 24h1v1H28zM30 24h1v1H30zM2 25h1v1H2zM8 25h1v1H8zM10 25h3v1H10zM14 25h4v1H14zM22 25h1v1H22zM26 25h1v1H26zM2 26h1v1H2zM4 26h3v1H4zM8 26h1v1H8zM10 26h7v1H10zM19 26h2v1H19zM22 26h6v1H22zM29 26h2v1H29zM2 27h1v1H2zM4 27h3v1H4zM8 27h1v1H8zM12 27h1v1H12zM14 27h2v1H14zM18 27h1v1H18zM22 27h2v1H22zM26 27h2v1H26zM2 28h1v1H2zM4 28h3v1H4zM8 28h1v1H8zM10 28h1v1H10zM12 28h1v1H12zM15 28h1v1H15zM17 28h1v1H17zM19 28h1v1H19zM21 28h1v1H21zM25 28h2v1H25zM30 28h1v1H30zM2 29h1v1H2zM8 29h1v1H8zM12 29h2v1H12zM15 29h1v1H15zM17 29h1v1H17zM19 29h1v1H19zM21 29h1v1H21zM23 29h3v1H23zM29 29h1v1H29zM2 30h7v1H2zM11 30h1v1H11zM15 30h1v1H15zM17 30h1v1H17zM20 30h4v1H20zM26 30h1v1H26zM28 30h3v1H28z"/>
+            <circle cx="16.5" cy="16.5" r="3.9" fill="#31208f"/>
+            <path d="M12.9 16.25 20.85 13.15c.38-.15.72.19.56.58l-2.85 7.62c-.14.37-.62.46-.88.16l-2.02-2.34-1.31 1.25c-.25.24-.67.07-.67-.28v-1.86l4.92-4.43-6.02 3.68c-.46.28-.99-.23-.72-.7.09-.16.24-.29.43-.36Z" fill="#fff"/>
+          </svg>
+        </a>
+        <a class="contact-handle" href="https://t.me/PIRAJOKE" target="_blank" rel="noopener">@PIRAJOKE</a>
+        <p>Отсканируй QR-код, чтобы продолжить в Telegram.</p>
+        <div class="contact-actions">
+          <a class="contact-link" href="https://calendly.com/thegreatgatsby456/30min" target="_blank" rel="noopener">Забронировать звонок в Calendly</a>
+          <a class="contact-link secondary" href="https://t.me/PIRAJOKE" target="_blank" rel="noopener">t.me/PIRAJOKE</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<script>
+  const dot = document.getElementById("cursorDot");
+  const ring = document.getElementById("cursorRing");
+  let mx = window.innerWidth / 2;
+  let my = window.innerHeight / 2;
+  let rx = mx;
+  let ry = my;
+  document.addEventListener("mousemove", (event) => {
+    mx = event.clientX;
+    my = event.clientY;
+  });
+  function drawCursor() {
+    dot.style.left = mx + "px";
+    dot.style.top = my + "px";
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + "px";
+    ring.style.top = ry + "px";
+    requestAnimationFrame(drawCursor);
+  }
+  drawCursor();
+
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const nav = document.getElementById("nav");
+  const progress = document.getElementById("progress");
+  const currentSlide = document.getElementById("currentSlide");
+  const totalSlides = document.getElementById("totalSlides");
+  let current = 0;
+  totalSlides.textContent = String(slides.length).padStart(2, "0");
+
+  slides.forEach((_, index) => {
+    const button = document.createElement("button");
+    button.className = "dot" + (index === 0 ? " active" : "");
+    button.setAttribute("aria-label", "Go to slide " + (index + 1));
+    button.addEventListener("click", () => goTo(index));
+    nav.appendChild(button);
+  });
+
+  function slideFromHash() {
+    const match = window.location.hash.match(/^#slide-(\d+)$/);
+    if (!match) return 0;
+    const parsed = Number(match[1]);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(slides.length - 1, parsed - 1));
+  }
+
+  function updateUi() {
+    progress.style.width = (((current + 1) / slides.length) * 100) + "%";
+    currentSlide.textContent = String(current + 1).padStart(2, "0");
+    document.querySelectorAll(".dot").forEach((button, index) => {
+      button.classList.toggle("active", index === current);
+    });
+    const nextHash = "#slide-" + (current + 1);
+    if (window.location.hash !== nextHash) {
+      history.replaceState(null, "", nextHash);
+    }
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= slides.length || index === current) return;
+    slides[current].classList.remove("active");
+    current = index;
+    slides[current].classList.add("active");
+    updateUi();
+  }
+
+  document.getElementById("nextBtn").addEventListener("click", () => goTo(current + 1));
+  document.getElementById("prevBtn").addEventListener("click", () => goTo(current - 1));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown" || event.key === " ") goTo(current + 1);
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") goTo(current - 1);
+  });
+
+  let touchStart = 0;
+  document.addEventListener("touchstart", (event) => {
+    touchStart = event.touches[0].clientX;
+  });
+  document.addEventListener("touchend", (event) => {
+    const dx = event.changedTouches[0].clientX - touchStart;
+    if (dx < -50) goTo(current + 1);
+    if (dx > 50) goTo(current - 1);
+  });
+
+  current = slideFromHash();
+  slides.forEach((slide, index) => slide.classList.toggle("active", index === current));
+  updateUi();
+</script>
+</body>
+</html>
