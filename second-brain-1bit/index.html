@@ -149,6 +149,7 @@ ul.clean li b{font-weight:700;color:var(--ink)}
 ul.clean li::before{content:counter(li,decimal-leading-zero);counter-increment:li;font-family:var(--mono);font-size:13px;
   color:var(--accent);font-weight:700;flex:none;position:relative;top:-2px}
 ul.clean{counter-reset:li}
+ul.clean.plain li::before{content:"✓";counter-increment:none;color:var(--accent-3);font-family:var(--sans);position:relative;top:0}
 
 .pill{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px}
 .pill.ok{color:var(--green);background:rgba(12,166,120,.1)} .pill.warn{color:var(--amber);background:rgba(232,89,12,.1)} .pill.run{color:var(--accent);background:var(--accent-soft)}
@@ -477,7 +478,7 @@ ul.clean{counter-reset:li}
     <div class="split rise" style="margin-top:6px">
       <div class="grid" style="gap:12px">
         <div class="chip" style="align-self:flex-start"><span class="dot c3"></span>Проверено — мой прод</div>
-        <ul class="clean" style="counter-reset:none;gap:10px">
+        <ul class="clean plain" style="gap:10px">
           <li style="font-size:16px">1 267 файлов / 12 755 фрагментов, поиск 0.72–0.79</li>
           <li style="font-size:16px">14 инструментов агента, ~300 автотестов</li>
           <li style="font-size:16px">Авто-роутинг и пассивная память — 24/7</li>
@@ -485,7 +486,7 @@ ul.clean{counter-reset:li}
       </div>
       <div class="grid" style="gap:12px">
         <div class="chip" style="align-self:flex-start"><span class="dot c2"></span>Гипотезы — в пилоте</div>
-        <ul class="clean" style="counter-reset:none;gap:10px">
+        <ul class="clean plain" style="gap:10px">
           <li style="font-size:16px">Эффект у клиента — метрика пилота, не обещание</li>
           <li style="font-size:16px">Готовность коннекторов — оценка на Discovery</li>
           <li style="font-size:16px">Данные клиента остаются в его контуре</li>
