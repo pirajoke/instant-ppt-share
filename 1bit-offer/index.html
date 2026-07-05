@@ -39,9 +39,9 @@ body{font-family:var(--sans);color:var(--ink);overflow:hidden;-webkit-font-smoot
 
 .deck{position:relative;height:100vh;width:100vw;overflow:hidden;z-index:1}
 .track{display:flex;height:100%;transition:transform .7s cubic-bezier(.76,0,.16,1)}
-.slide{position:relative;flex:0 0 100vw;height:100vh;padding:clamp(30px,5vh,72px) clamp(32px,7vw,130px);
+.slide{position:relative;flex:0 0 100vw;height:100vh;padding:clamp(28px,4.6vh,64px) clamp(32px,7vw,130px);
   display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.slide-inner{width:100%;max-width:1260px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.6vh,30px)}
+.slide-inner{width:100%;max-width:1260px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(14px,2.3vh,26px)}
 .rise{opacity:0;transform:translateY(30px);filter:blur(6px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1),filter .7s}
 .slide.is-active .rise{opacity:1;transform:none;filter:none}
 
@@ -49,53 +49,63 @@ body{font-family:var(--sans);color:var(--ink);overflow:hidden;-webkit-font-smoot
 .eyebrow.c2{color:var(--accent-2)} .eyebrow.c3{color:var(--accent-3)}
 .eyebrow::before{content:"";width:26px;height:2px;border-radius:2px;background:currentColor}
 h1.title{font-family:var(--display);font-weight:700;letter-spacing:-.025em;line-height:.98;font-size:clamp(36px,6.4vw,92px);margin:0}
-h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.02;font-size:clamp(30px,5vw,60px);margin:0}
+h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.02;font-size:clamp(28px,4.6vw,56px);margin:0}
 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .grad2{background:var(--grad-2);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{font-size:clamp(16px,1.7vw,22px);line-height:1.5;color:var(--muted);max-width:64ch;font-weight:400}
+.lead{font-size:clamp(16px,1.65vw,21px);line-height:1.5;color:var(--muted);max-width:66ch;font-weight:400}
 .lead b,.lead strong{color:var(--ink-soft);font-weight:600}
 
 .stat{display:flex;flex-direction:column;gap:2px}
-.stat .v{font-family:var(--display);font-weight:700;letter-spacing:-.03em;line-height:.92;font-size:clamp(40px,6vw,84px)}
-.stat .l{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+.stat .v{font-family:var(--display);font-weight:700;letter-spacing:-.03em;line-height:.92;font-size:clamp(36px,5vw,68px)}
+.stat .l{font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
 
-.grid{display:grid;gap:clamp(12px,1.4vw,18px)}
+.grid{display:grid;gap:clamp(12px,1.3vw,17px)}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
-  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(18px,1.6vw,26px);
-  display:flex;flex-direction:column;gap:10px;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s}
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(16px,1.5vw,24px);
+  display:flex;flex-direction:column;gap:9px;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s}
 .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(79,70,229,.28)}
-.card h3{margin:0;font-size:clamp(16px,1.5vw,20px);font-weight:700;letter-spacing:-.01em}
-.card p{margin:0;font-size:clamp(13px,1.05vw,15px);line-height:1.45;color:var(--muted)}
-.card .big{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1}
+.card h3{margin:0;font-size:clamp(15.5px,1.45vw,19px);font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:clamp(12.5px,1vw,14.5px);line-height:1.45;color:var(--muted)}
+.card .em{color:var(--accent-3);font-weight:600}
+.card .big{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.7vw,36px);letter-spacing:-.02em;line-height:1}
 .card-head{display:flex;align-items:center;gap:12px}
-.ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none;font-family:var(--display);font-weight:700;font-size:15px;color:#fff}
+.ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none;font-family:var(--display);font-weight:700;font-size:14px;color:#fff}
 .ic.a{background:linear-gradient(135deg,#6366f1,#4f46e5)} .ic.b{background:linear-gradient(135deg,#f43f5e,#e11d48)} .ic.c{background:linear-gradient(135deg,#14b8a6,#0ea5a4)}
 .chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-soft);background:var(--glass-strong);border:1px solid var(--line);border-radius:999px;padding:8px 15px;box-shadow:var(--shadow)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
 .dot.c2{background:var(--accent-2)} .dot.c3{background:var(--accent-3)} .dot.g{background:var(--green)}
 .badge-row{display:flex;flex-wrap:wrap;gap:10px}
 
-.split{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(24px,3.4vw,56px);align-items:center}
+.split{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(22px,3vw,50px);align-items:center}
 .split.rev{grid-template-columns:.98fr 1.02fr}
 .imgframe{border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow-lg);overflow:hidden;position:relative;background:var(--paper)}
 .imgframe .cap{position:absolute;left:14px;bottom:14px;background:var(--glass-strong);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
 
 .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px)}
-.word{position:relative;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(22px,2.4vw,34px);background:var(--glass);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;gap:12px;min-height:210px;justify-content:space-between}
+.word{position:relative;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(20px,2.2vw,32px);background:var(--glass);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;gap:11px;min-height:200px;justify-content:space-between}
 .word::after{content:"";position:absolute;inset:0;background:var(--grad);opacity:.05}
 .word .n{font-family:var(--mono);font-size:13px;color:var(--faint);font-weight:600}
-.word .t{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.5vw,34px);letter-spacing:-.02em;line-height:1.02}
-.word .d{font-size:clamp(13px,1.1vw,15.5px);color:var(--muted);line-height:1.45}
+.word .t{font-family:var(--display);font-weight:700;font-size:clamp(21px,2.4vw,32px);letter-spacing:-.02em;line-height:1.04}
+.word .d{font-size:clamp(12.5px,1.05vw,15px);color:var(--muted);line-height:1.45}
 
-ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(10px,1.4vh,16px)}
-ul.clean li{display:flex;gap:14px;align-items:baseline;font-size:clamp(16px,1.7vw,22px);line-height:1.3;color:var(--ink-soft);font-weight:500}
+ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(9px,1.2vh,15px)}
+ul.clean li{display:flex;gap:13px;align-items:baseline;font-size:clamp(15px,1.55vw,20px);line-height:1.3;color:var(--ink-soft);font-weight:500}
 ul.clean li b{font-weight:700;color:var(--ink)}
-ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;flex:none;font-size:clamp(15px,1.5vw,19px)}
-ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex:none;font-size:clamp(15px,1.5vw,19px)}
+ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;flex:none;font-size:clamp(14px,1.4vw,18px)}
+ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex:none;font-size:clamp(14px,1.4vw,18px)}
+
+/* useful-for cards with a "what exactly" line */
+.use{background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(16px,1.5vw,24px);display:flex;flex-direction:column;gap:9px;transition:transform .3s,box-shadow .3s,border-color .3s}
+.use:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(79,70,229,.28)}
+.use .top{display:flex;align-items:center;gap:12px}
+.use h3{margin:0;font-size:clamp(16px,1.5vw,20px);font-weight:700;letter-spacing:-.01em}
+.use p{margin:0;font-size:clamp(12.5px,1.02vw,14.5px);line-height:1.45;color:var(--muted)}
+.use .do{font-size:12px;color:var(--ink-soft);background:var(--glass-strong);border:1px solid var(--line);border-radius:9px;padding:8px 11px;line-height:1.4}
+.use .do b{color:var(--accent)}
 
 .note{font-size:12px;color:var(--faint);font-family:var(--mono)}
-.softnote{background:var(--accent-soft);border:1px solid rgba(79,70,229,.18);border-radius:14px;padding:13px 17px;font-size:13.5px;color:#3b3f7a;display:flex;gap:10px;align-items:flex-start;line-height:1.45}
+.softnote{background:var(--accent-soft);border:1px solid rgba(79,70,229,.18);border-radius:14px;padding:12px 16px;font-size:13px;color:#3b3f7a;display:flex;gap:10px;align-items:flex-start;line-height:1.45}
 .softnote b{color:var(--accent)}
 .cover-flow{display:flex;flex-wrap:wrap;align-items:center;gap:11px}
 .cf{background:var(--glass-strong);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow)}
@@ -133,50 +143,38 @@ ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex
 <!-- 01 COVER -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow c2 rise">Знакомство · что умею и что предлагаю</span>
+    <span class="eyebrow c2 rise">Знакомство · что я делаю и чем могу помочь</span>
     <h1 class="title rise">Чем могу быть<br><span class="grad">полезен 1Бит</span></h1>
-    <p class="lead rise" style="font-size:clamp(18px,2vw,25px);max-width:52ch">Я строю рабочие AI-системы — память, агенты, автоматизация. Не консалтинг на словах: покажу, что <b>уже собрал и запустил</b>, и где это могло бы усилить ваши проекты.</p>
+    <p class="lead rise" style="font-size:clamp(18px,2vw,25px);max-width:52ch">Я делаю AI-инженерию под ключ — <b>агенты, слой памяти, интеграции, автоматизация</b>. Не консалтинг на словах: покажу, что уже собрал и запустил, и конкретно где это усилит проекты 1Бит.</p>
     <div class="badge-row rise" style="margin-top:6px">
-      <span class="chip"><span class="dot c3"></span>Рабочие прототипы, не слайды</span>
-      <span class="chip"><span class="dot"></span>AI-агенты + слой памяти</span>
-      <span class="chip"><span class="dot c2"></span>Интеграции платформ и автоматизация</span>
+      <span class="chip"><span class="dot c3"></span>Рабочие системы в проде, не слайды</span>
+      <span class="chip"><span class="dot"></span>AI-агенты + RAG-память</span>
+      <span class="chip"><span class="dot c2"></span>Интеграции и автоматизация</span>
     </div>
-    <p class="note rise" style="margin-top:8px">Это знакомство, а не коммерческое предложение — хочу показать навыки и обсудить, где могу быть полезен.</p>
+    <p class="note rise" style="margin-top:6px">Это знакомство, а не коммерческое предложение — хочу показать, что умею, и где реально пригожусь.</p>
   </div>
 </section>
 
-<!-- 02 ABOUT ME -->
+<!-- 02 WHAT I DO -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow rise">Коротко обо мне</span>
-    <h2 class="head rise">Собираю AI-системы <span class="grad">руками</span></h2>
-    <p class="lead rise">Не «расскажу, как надо» — а делаю end-to-end: от слоя данных и памяти до агентов, которые реально выполняют действия. Спокойно работаю с интеграциями, автоматизацией и LLM-приложениями.</p>
-    <div class="grid g3 rise" style="margin-top:6px">
-      <div class="card"><div class="card-head"><span class="ic a">◆</span><h3>Делаю, а не только советую</h3></div><p>Довожу до работающего прототипа в проде, а не до презентации.</p></div>
-      <div class="card"><div class="card-head"><span class="ic c">⚙</span><h3>Инженерно</h3></div><p>Тесты, деплой, надёжность — не разовый скрипт, а система, которую можно поддерживать.</p></div>
-      <div class="card"><div class="card-head"><span class="ic b">⚡</span><h3>Быстро</h3></div><p>От идеи до живого демо — дни, а не месяцы.</p></div>
+    <span class="eyebrow rise">Что я делаю</span>
+    <h2 class="head rise">Собираю AI-системы <span class="grad">под ключ</span></h2>
+    <p class="lead rise">Веду задачу от данных до работающего агента: беру узкий кусок, за дни довожу до живого прототипа, обкатываю на реальных данных, дальше — тесты, деплой, поддержка. Не «ещё один скрипт», а система, которую можно развивать.</p>
+    <div class="grid g4 rise" style="margin-top:4px">
+      <div class="card"><div class="card-head"><span class="ic a">A</span><h3>AI-агенты</h3></div><p>Не чат-болталка: агент с инструментами — <span class="em">сам ищет, отвечает и выполняет действия</span>. Необратимое — только через подтверждение человека.</p></div>
+      <div class="card"><div class="card-head"><span class="ic c">M</span><h3>Слой памяти / RAG</h3></div><p>Семантический поиск по данным: <span class="em">находит по смыслу</span>, отвечает со ссылкой на источник. Локальные эмбеддинги — без утечки данных наружу.</p></div>
+      <div class="card"><div class="card-head"><span class="ic b">↔</span><h3>Интеграции</h3></div><p>Связываю платформы в один контур: <span class="em">календарь, трекеры, мессенджеры, внешние API</span> — и данные начинают работать вместе.</p></div>
+      <div class="card"><div class="card-head"><span class="ic a">↻</span><h3>Автоматизация</h3></div><p>Рутину — на фоновых агентов: <span class="em">делают сами, уведомляют о результате</span>, отчитываются о статусе.</p></div>
     </div>
+    <p class="note rise">Стек: Python, LLM (Anthropic/локальные), RAG, MCP-инструменты, интеграции по API, деплой и мониторинг.</p>
   </div>
 </section>
 
-<!-- 03 SKILLS -->
+<!-- 03 WHAT I BUILT (proof story) -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow rise">Что я умею</span>
-    <h2 class="head rise">Навыки — <span class="grad">прикладные</span></h2>
-    <div class="grid g4 rise" style="margin-top:6px">
-      <div class="card"><div class="card-head"><span class="ic a">A</span><h3>AI-агенты</h3></div><p>Не чат-болталка, а агент с инструментами: сам ищет, отвечает и выполняет действия — с подтверждением на необратимое.</p></div>
-      <div class="card"><div class="card-head"><span class="ic c">M</span><h3>Слой памяти / RAG</h3></div><p>Семантический поиск по данным: находит по смыслу, отвечает со ссылкой на источник. Локальные эмбеддинги.</p></div>
-      <div class="card"><div class="card-head"><span class="ic b">↔</span><h3>Интеграции</h3></div><p>Связываю платформы: календарь, трекеры, мессенджеры, внешние API — в единый рабочий контур.</p></div>
-      <div class="card"><div class="card-head"><span class="ic a">↻</span><h3>Автоматизация</h3></div><p>Рутинные процессы → фоновые агенты и джобы: делают сами, уведомляют о результате.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- 04 PROOF -->
-<section class="slide">
-  <div class="slide-inner">
-    <span class="eyebrow rise">Чтобы не на словах</span>
+    <span class="eyebrow rise">Чтобы не на словах — что уже построил</span>
     <div class="split" style="margin-top:2px">
       <div class="imgframe rise">
         <div style="width:100%;aspect-ratio:2330/1546;overflow:hidden;background:linear-gradient(180deg,#fbfcff,#f1f3f9)">
@@ -186,30 +184,30 @@ ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex
         <div style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:16/11;background:linear-gradient(180deg,#fbfcff,#eef1f8);text-align:center;padding:24px">
           <div style="font-size:30px">🧠</div><div style="font-weight:700">Obsidian Graph View</div><div class="note">assets/obsidian-graph.png</div>
         </div>
-        <span class="cap">Мой живой слой памяти · связанный граф</span>
+        <span class="cap">Мой слой памяти · связанный граф контекста</span>
       </div>
-      <div class="grid rise" style="gap:20px">
-        <h2 class="head" style="font-size:clamp(24px,3.2vw,40px)">Живой пример<br><span class="grad">моих навыков</span></h2>
-        <p class="lead" style="font-size:16px">Личная AI-система: слой памяти в Obsidian + Telegram-агент (Jarvis), который отвечает по контексту и выполняет действия. Работает у меня 24/7.</p>
-        <div class="grid g2" style="gap:20px">
-          <div class="stat"><span class="v grad">1 267</span><span class="l">файлов в графе</span></div>
+      <div class="grid rise" style="gap:16px">
+        <h2 class="head" style="font-size:clamp(23px,3vw,38px)">Личная AI-система,<br><span class="grad">работающая 24/7</span></h2>
+        <p class="lead" style="font-size:15.5px">Слой памяти в Obsidian + Telegram-агент «Jarvis»: отвечает по контексту со ссылкой на источник, сам ставит встречи, заметки и задачи, делегирует фоновую работу — с подтверждением на необратимое. Авто-выбор модели под запрос, пассивное обучение из диалогов.</p>
+        <div class="grid g2" style="gap:16px">
           <div class="stat"><span class="v grad">12 755</span><span class="l">фрагментов памяти</span></div>
-          <div class="stat"><span class="v">14</span><span class="l">инструментов агента</span></div>
-          <div class="stat"><span class="v">24/7</span><span class="l">в проде</span></div>
+          <div class="stat"><span class="v grad">14</span><span class="l">инструментов агента</span></div>
+          <div class="stat"><span class="v">~300</span><span class="l">автотестов</span></div>
+          <div class="stat"><span class="v">24/7</span><span class="l">в проде на своём сервере</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 05 ABOUT 1BIT (reference) -->
+<!-- 04 ABOUT 1BIT (reference, short) -->
 <section class="slide">
   <div class="slide-inner">
     <span class="eyebrow c3 rise">Как я понимаю ваш профиль</span>
     <h2 class="head rise">Чем занимается 1Бит</h2>
-    <p class="lead rise">Справочно — как я вижу вашу линейку, чтобы говорить на одном языке. Поправьте, если что-то упустил или расставил акценты не так.</p>
-    <div class="grid g4 rise" style="margin-top:4px">
-      <div class="card"><h3>1С / ERP</h3><p>Внедрение и доработка, учёт и управление.</p></div>
+    <p class="lead rise">Справочно — чтобы говорить на одном языке. Поправьте, если что-то упустил.</p>
+    <div class="grid g4 rise" style="margin-top:2px">
+      <div class="card"><h3>1С / ERP</h3><p>Внедрение, доработка, учёт и управление.</p></div>
       <div class="card"><h3>CRM</h3><p>Продажи, клиенты, воронки.</p></div>
       <div class="card"><h3>BI</h3><p>Отчётность и аналитика по данным.</p></div>
       <div class="card"><h3>ЭДО</h3><p>Электронный документооборот.</p></div>
@@ -221,33 +219,57 @@ ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex
   </div>
 </section>
 
-<!-- 06 WHERE I COULD HELP -->
+<!-- 05 HOW USEFUL — part 1 -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow rise">Где пересекаются наши миры</span>
-    <h2 class="head rise">Где я мог бы <span class="grad">быть полезен</span></h2>
-    <p class="lead rise">Мягко, как варианты — не «вам это нужно», а «вот что я мог бы добавить поверх того, что вы уже делаете».</p>
-    <div class="grid g2 rise" style="margin-top:4px">
-      <div class="card"><div class="card-head"><span class="ic a">＋</span><h3>AI-слой поверх 1С / CRM</h3></div><p>Умные ответы и поиск по данным клиента — по смыслу, со ссылкой на источник.</p></div>
-      <div class="card"><div class="card-head"><span class="ic c">＋</span><h3>Агенты для документооборота</h3></div><p>Найти / сверить / подготовить по ЭДО — с подтверждением на действие.</p></div>
-      <div class="card"><div class="card-head"><span class="ic b">＋</span><h3>Разговор с данными</h3></div><p>Вопрос словами → ответ из BI/учёта, без похода к аналитику.</p></div>
-      <div class="card"><div class="card-head"><span class="ic a">＋</span><h3>Автоматизация рутины</h3></div><p>Фоновые агенты на повторяющиеся операции внутри ваших процессов.</p></div>
+    <span class="eyebrow rise">Как я могу быть полезен · 1/2</span>
+    <h2 class="head rise">AI поверх <span class="grad">1С, CRM и ЭДО</span></h2>
+    <p class="lead rise">Не заменяю ваши системы — надстраиваю над ними AI-слой. Ровно то, что я уже умею, только источник памяти = данные клиента.</p>
+    <div class="grid g2 rise" style="margin-top:2px">
+      <div class="use"><div class="top"><span class="ic a">01</span><h3>Единая память по клиенту и сделке</h3></div>
+        <p>Менеджер спрашивает словами — агент собирает контекст из 1С + CRM + переписки в один ответ.</p>
+        <div class="do"><b>Что сделаю:</b> retrieval-агент со ссылками на источник — как мой семантический поиск, но по вашим CRM/1С.</div></div>
+      <div class="use"><div class="top"><span class="ic c">02</span><h3>Агент по документообороту</h3></div>
+        <p>«Найди · сверь · подготовь» по ЭДО. Отправка и изменения — только после подтверждения.</p>
+        <div class="do"><b>Что сделаю:</b> агент с действиями и confirm-gate — тот же паттерн, что у меня в Jarvis для календаря/задач.</div></div>
     </div>
-    <p class="note rise">Это гипотезы направлений, а не готовый продукт — конкретику определим вместе.</p>
   </div>
 </section>
 
-<!-- 07 FORMATS -->
+<!-- 06 HOW USEFUL — part 2 -->
 <section class="slide">
   <div class="slide-inner">
-    <span class="eyebrow rise">Форматы</span>
-    <h2 class="head rise">Как я мог бы <span class="grad">подключиться</span></h2>
-    <div class="trio rise" style="margin-top:6px">
-      <div class="word"><div><span class="n">01</span><div class="t">Небольшой proof-of-concept</div></div><div class="d">Взять один кусочек и за пару недель сделать работающее демо на ваших/тестовых данных.</div></div>
-      <div class="word"><div><span class="n">02</span><div class="t">AI-инженер в проект</div></div><div class="d">Встроиться в вашу команду и закрывать AI-часть внутри существующих внедрений.</div></div>
-      <div class="word"><div><span class="n">03</span><div class="t">Воркшоп для команды</div></div><div class="d">Показать, как это устроено, и передать подход вашим специалистам.</div></div>
+    <span class="eyebrow rise">Как я могу быть полезен · 2/2</span>
+    <h2 class="head rise">Разговор с данными <span class="grad">и автоматизация</span></h2>
+    <div class="grid g3 rise" style="margin-top:2px">
+      <div class="use"><div class="top"><span class="ic b">03</span><h3>Разговор с BI</h3></div>
+        <p>Вопрос словами → цифра из отчётов со ссылкой. Без похода к аналитику на каждый запрос.</p>
+        <div class="do"><b>Что сделаю:</b> LLM-слой над вашими BI/учётными данными.</div></div>
+      <div class="use"><div class="top"><span class="ic a">04</span><h3>Автоматизация рутины</h3></div>
+        <p>Обработка заявок, напоминания, статусы, сверки — на фоновых агентов внутри процессов.</p>
+        <div class="do"><b>Что сделаю:</b> фоновые агенты + джобы, как мой bridge-диспетчер задач.</div></div>
+      <div class="use"><div class="top"><span class="ic c">05</span><h3>Инструменты для вашей команды</h3></div>
+        <p>Умный поиск по вашей базе знаний, ускорение поддержки, онбординг новых сотрудников.</p>
+        <div class="do"><b>Что сделаю:</b> внутренний ассистент 1Бит на том же слое памяти.</div></div>
     </div>
-    <p class="note rise">Без пакетов и прайсов — форму и объём подберём под то, что вам реально удобно.</p>
+    <p class="note rise">Это направления-гипотезы под ваш контекст — конкретику и приоритет выберем вместе.</p>
+  </div>
+</section>
+
+<!-- 07 FORMATS + FIRST STEP -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow rise">Как подключиться</span>
+    <h2 class="head rise">Начнём <span class="grad">с малого</span></h2>
+    <div class="trio rise" style="margin-top:4px">
+      <div class="word"><div><span class="n">01</span><div class="t">Proof-of-concept</div></div><div class="d">Один узкий кусок → работающее демо за пару недель на ваших / тестовых данных.</div></div>
+      <div class="word"><div><span class="n">02</span><div class="t">AI-инженер в проект</div></div><div class="d">Встроюсь в команду и закрою AI-часть внутри ваших внедрений.</div></div>
+      <div class="word"><div><span class="n">03</span><div class="t">Воркшоп для команды</div></div><div class="d">Покажу, как это устроено, и передам подход вашим специалистам.</div></div>
+    </div>
+    <div class="badge-row rise">
+      <span class="tagpill"><span class="dot g"></span>Первый шаг — маленький и с понятным результатом</span>
+      <span class="tagpill"><span class="dot"></span>Без пакетов и обязательств</span>
+    </div>
   </div>
 </section>
 
@@ -256,16 +278,16 @@ ul.clean.arrow li::before{content:"→";color:var(--accent);font-weight:800;flex
   <div class="slide-inner">
     <span class="eyebrow rise">Дальше</span>
     <h2 class="head rise">Давайте <span class="grad">познакомимся</span></h2>
-    <ul class="clean arrow rise" style="margin-top:4px">
+    <ul class="clean arrow rise" style="margin-top:2px">
       <li>Покажу <b>живое демо</b> — Jarvis и слой памяти, вживую, не на слайдах.</li>
-      <li>Обсудим, <b>где я могу быть полезен</b> в ваших текущих проектах.</li>
-      <li>Если срастётся — <b>возьму маленький кусочек</b> и сделаю, чтобы попробовать в деле.</li>
+      <li>Обсудим, <b>где я полезнее всего</b> в ваших текущих проектах.</li>
+      <li>Возьму <b>маленький кусочек</b> и сделаю — чтобы попробовать в деле.</li>
     </ul>
-    <div class="badge-row rise" style="margin-top:6px">
+    <div class="badge-row rise" style="margin-top:4px">
       <span class="tagpill"><span class="dot g"></span>Открыт к разговору без обязательств</span>
-      <span class="tagpill"><span class="dot"></span>Начну с малого и покажу результат</span>
+      <span class="tagpill"><span class="dot"></span>Telegram / почта — впишите ваши</span>
     </div>
-    <p class="note rise">Контакты: Telegram / почта — впишите ваши. Презентация редактируется в этом HTML.</p>
+    <p class="note rise">Чем могу быть полезен 1Бит · знакомство · презентация редактируется в этом HTML</p>
   </div>
 </section>
 
