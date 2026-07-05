@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Личная AI-система — что я собрал сам</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f7; --bg-2:#f8fafc; --paper:#ffffff;
+  --glass:rgba(255,255,255,.58); --glass-strong:rgba(255,255,255,.8);
+  --ink:#0e1220; --ink-soft:#333a4d; --muted:#5c6478; --faint:#98a0b3;
+  --line:rgba(14,18,32,.09); --line-soft:rgba(14,18,32,.05);
+  --accent:#4f46e5; --accent-2:#e11d48; --accent-3:#0ea5a4;
+  --accent-soft:rgba(79,70,229,.10); --accent2-soft:rgba(225,29,72,.09); --accent3-soft:rgba(14,165,164,.10);
+  --grad:linear-gradient(115deg,#4f46e5 0%,#7c3aed 40%,#0ea5a4 100%);
+  --grad-2:linear-gradient(115deg,#e11d48,#7c3aed);
+  --green:#0ca678; --amber:#e8590c;
+  --shadow:0 1px 2px rgba(16,20,30,.04), 0 10px 30px rgba(16,20,30,.06);
+  --shadow-lg:0 30px 80px rgba(30,34,70,.16);
+  --radius:20px; --radius-sm:13px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Space Grotesk","Inter",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--sans);color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;background:var(--bg)}
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora::before,.aurora::after{content:"";position:absolute;width:65vw;height:65vw;border-radius:50%;filter:blur(80px);opacity:.5}
+.aurora::before{background:radial-gradient(circle,rgba(79,70,229,.5),transparent 60%);top:-22vw;right:-15vw;animation:drift1 22s ease-in-out infinite alternate}
+.aurora::after{background:radial-gradient(circle,rgba(14,165,164,.45),transparent 60%);bottom:-25vw;left:-15vw;animation:drift2 26s ease-in-out infinite alternate}
+.aurora i{position:absolute;width:42vw;height:42vw;border-radius:50%;filter:blur(80px);opacity:.32;background:radial-gradient(circle,rgba(225,29,72,.4),transparent 60%);top:38%;left:52%;animation:drift3 30s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(-6vw,8vh) scale(1.15)}}
+@keyframes drift2{to{transform:translate(7vw,-6vh) scale(1.2)}}
+@keyframes drift3{to{transform:translate(-9vw,-7vh) scale(1.1)}}
+
+.deck{position:relative;height:100vh;width:100vw;overflow:hidden;z-index:1}
+.track{display:flex;height:100%;transition:transform .7s cubic-bezier(.76,0,.16,1)}
+.slide{position:relative;flex:0 0 100vw;height:100vh;padding:clamp(30px,5vh,72px) clamp(32px,7vw,130px);
+  display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.slide-inner{width:100%;max-width:1260px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.6vh,30px)}
+.rise{opacity:0;transform:translateY(30px);filter:blur(6px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1),filter .7s}
+.slide.is-active .rise{opacity:1;transform:none;filter:none}
+
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.eyebrow.c2{color:var(--accent-2)} .eyebrow.c3{color:var(--accent-3)}
+.eyebrow::before{content:"";width:26px;height:2px;border-radius:2px;background:currentColor}
+h1.title{font-family:var(--display);font-weight:700;letter-spacing:-.025em;line-height:.98;font-size:clamp(40px,7.4vw,104px);margin:0}
+h2.head{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.02;font-size:clamp(30px,5vw,60px);margin:0}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad2{background:var(--grad-2);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{font-size:clamp(16px,1.7vw,22px);line-height:1.5;color:var(--muted);max-width:60ch;font-weight:400}
+.lead b,.lead strong{color:var(--ink-soft);font-weight:600}
+
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .v{font-family:var(--display);font-weight:700;letter-spacing:-.03em;line-height:.92;font-size:clamp(40px,6vw,84px)}
+.stat .l{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}
+
+.grid{display:grid;gap:clamp(12px,1.4vw,18px)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g3{grid-template-columns:repeat(3,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(18px,1.6vw,26px);
+  display:flex;flex-direction:column;gap:10px;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s,border-color .3s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(79,70,229,.28)}
+.card h3{margin:0;font-size:clamp(16px,1.5vw,20px);font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:clamp(13px,1.05vw,15px);line-height:1.45;color:var(--muted)}
+.card .big{font-family:var(--display);font-weight:700;font-size:clamp(26px,3vw,40px);letter-spacing:-.02em;line-height:1}
+.ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none;font-family:var(--display);font-weight:700;font-size:16px;color:#fff}
+.ic.a{background:linear-gradient(135deg,#6366f1,#4f46e5)} .ic.b{background:linear-gradient(135deg,#f43f5e,#e11d48)} .ic.c{background:linear-gradient(135deg,#14b8a6,#0ea5a4)}
+.chip{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink-soft);background:var(--glass-strong);border:1px solid var(--line);border-radius:999px;padding:8px 15px;box-shadow:var(--shadow)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.dot.c2{background:var(--accent-2)} .dot.c3{background:var(--accent-3)} .dot.g{background:var(--green)}
+.badge-row{display:flex;flex-wrap:wrap;gap:10px}
+
+.flow-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:center;margin-bottom:2px}
+.stack{display:flex;flex-direction:column;gap:clamp(4px,.7vh,9px)}
+.band{display:flex;align-items:center;gap:clamp(14px,2vw,26px);background:var(--glass);border:1px solid var(--line);border-radius:15px;padding:clamp(12px,1.5vh,18px) clamp(16px,1.8vw,24px);box-shadow:var(--shadow)}
+.band.hi{border-color:rgba(79,70,229,.4);background:linear-gradient(90deg,rgba(79,70,229,.07),var(--glass))}
+.band.hr{border-color:rgba(225,29,72,.32);background:linear-gradient(90deg,rgba(225,29,72,.05),var(--glass))}
+.band-l{flex:0 0 clamp(120px,15vw,190px);display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;font-size:clamp(15px,1.5vw,20px);letter-spacing:-.01em}
+.band-n{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.band.hr .band-n{color:var(--accent-2)} .band.hi .band-n{color:var(--accent)}
+.band-c{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.tg{font-size:clamp(12px,1.1vw,15px);font-weight:600;color:var(--ink-soft);background:var(--glass-strong);border:1px solid var(--line);border-radius:9px;padding:6px 12px}
+.tg small{color:var(--faint);font-weight:500;margin-left:5px}
+.band-sep{text-align:center;color:var(--faint);font-size:15px;line-height:.6}
+
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
+.week{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,1.5vw,22px);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.week::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad)}
+.week .wk{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600}
+.week h4{margin:0;font-size:clamp(15px,1.4vw,19px);font-weight:700}
+.week ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--muted);line-height:1.5}
+
+.split{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(24px,3.4vw,56px);align-items:center}
+.split.rev{grid-template-columns:.98fr 1.02fr}
+.imgframe{border-radius:var(--radius);border:1px solid var(--line);box-shadow:var(--shadow-lg);overflow:hidden;position:relative;background:var(--paper)}
+.imgframe .cap{position:absolute;left:14px;bottom:14px;background:var(--glass-strong);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px)}
+.word{position:relative;border:1px solid var(--line);border-radius:var(--radius);padding:clamp(22px,2.4vw,34px);background:var(--glass);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;gap:12px;min-height:230px;justify-content:space-between}
+.word::after{content:"";position:absolute;inset:0;background:var(--grad);opacity:.05}
+.word .n{font-family:var(--mono);font-size:13px;color:var(--faint);font-weight:600}
+.word .t{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.7vw,36px);letter-spacing:-.02em;line-height:1}
+.word .d{font-size:clamp(13px,1.1vw,15.5px);color:var(--muted);line-height:1.45}
+
+ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(10px,1.4vh,16px)}
+ul.clean li{display:flex;gap:14px;align-items:baseline;font-size:clamp(16px,1.7vw,22px);line-height:1.3;color:var(--ink-soft);font-weight:500}
+ul.clean li b{font-weight:700;color:var(--ink)}
+ul.clean.check li::before{content:"✓";color:var(--accent-3);font-weight:800;flex:none;font-size:clamp(15px,1.5vw,19px)}
+
+.pill{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:999px}
+.pill.ok{color:var(--green);background:rgba(12,166,120,.1)} .pill.warn{color:var(--amber);background:rgba(232,89,12,.1)} .pill.run{color:var(--accent);background:var(--accent-soft)}
+
+.note{font-size:12px;color:var(--faint);font-family:var(--mono)}
+.cover-flow{display:flex;flex-wrap:wrap;align-items:center;gap:11px}
+.cf{background:var(--glass-strong);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow)}
+.cf.hi{background:var(--grad);color:#fff;border:none;box-shadow:0 10px 26px rgba(79,70,229,.32)}
+.cf-sep{color:var(--faint);font-size:18px}
+
+.counter{position:fixed;top:26px;left:clamp(28px,7vw,130px);z-index:40;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--muted)}
+.counter b{color:var(--ink)}
+.brandtag{position:fixed;top:24px;right:clamp(28px,7vw,130px);z-index:40;display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.brandtag .logo{width:26px;height:26px;border-radius:8px;background:var(--grad);display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:13px;box-shadow:0 6px 16px rgba(79,70,229,.35)}
+.progress{position:fixed;top:0;left:0;height:3px;z-index:41;background:var(--grad);width:0;transition:width .6s cubic-bezier(.76,0,.16,1);box-shadow:0 0 14px rgba(79,70,229,.5)}
+.arrows{position:fixed;bottom:26px;right:clamp(28px,7vw,130px);z-index:42;display:flex;gap:10px}
+.arrow{width:46px;height:46px;border-radius:13px;border:1px solid var(--line);background:var(--glass-strong);backdrop-filter:blur(14px);color:var(--ink);font-size:19px;cursor:pointer;display:grid;place-items:center;box-shadow:var(--shadow);transition:.16s}
+.arrow:hover{color:#fff;background:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+.dots{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);z-index:42;display:flex;gap:7px}
+.dnav{width:7px;height:7px;border-radius:50%;background:var(--faint);opacity:.45;cursor:pointer;transition:.25s;border:none;padding:0}
+.dnav.on{opacity:1;background:var(--accent);width:24px;border-radius:4px}
+.hint{position:fixed;bottom:28px;left:clamp(28px,7vw,130px);z-index:40;font-size:11px;color:var(--faint);font-family:var(--mono)}
+
+@media (max-width:860px){
+  .g4,.g3,.trio{grid-template-columns:1fr 1fr}.split,.split.rev{grid-template-columns:1fr}.timeline{grid-template-columns:1fr 1fr}
+}
+@media print{body,.deck,.track{height:auto;overflow:visible;display:block;transform:none!important}.slide{height:100vh;page-break-after:always}.rise{opacity:1!important;transform:none!important;filter:none!important}.aurora,.arrows,.dots,.hint,.progress,.counter,.brandtag{display:none!important}}
+</style>
+</head>
+<body>
+<div class="aurora"><i></i></div>
+<div class="progress" id="progress"></div>
+<div class="counter"><b id="cur">01</b> / <span id="total">08</span></div>
+<div class="brandtag"><span class="logo">S²</span> Личная AI-система · <b style="color:var(--accent-2)">demo</b></div>
+
+<div class="deck"><div class="track" id="track">
+
+<!-- 01 COVER -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c2 rise">Что я уже собрал — сам</span>
+    <h1 class="title rise">Личная<br><span class="grad">AI-система</span></h1>
+    <p class="lead rise" style="font-size:clamp(18px,2vw,26px);max-width:46ch">Second brain, слой памяти и агенты. Не идея и не прототип на слайдах — <b>работает у меня 24/7.</b></p>
+    <div class="cover-flow rise">
+      <span class="cf">Obsidian · заметки</span><span class="cf-sep">→</span>
+      <span class="cf hi">Память</span><span class="cf-sep">→</span><span class="cf hi">Агенты · Jarvis</span>
+    </div>
+    <div class="badge-row rise" style="margin-top:6px">
+      <span class="chip"><span class="dot"></span>Граф из 1 267 заметок</span>
+      <span class="chip"><span class="dot c3"></span>12 755 фрагментов памяти</span>
+      <span class="chip"><span class="dot c2"></span>14 инструментов агента · в проде</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 HOW IT WORKS -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Как устроено</span>
+    <h2 class="head rise">Источники → <span class="grad">память</span> → агенты</h2>
+    <div class="stack rise" style="margin-top:4px">
+      <div class="band">
+        <div class="band-l"><span class="band-n">01</span>Источники</div>
+        <div class="band-c"><span class="tg">Obsidian-заметки</span><span class="tg">транскрипты</span><span class="tg">календарь</span><span class="tg">задачи</span></div>
+      </div>
+      <div class="band-sep">↓</div>
+      <div class="band">
+        <div class="band-l"><span class="band-n">02</span>Сбор</div>
+        <div class="band-c"><span class="tg">Индексация<small>по заголовкам</small></span><span class="tg">Эмбеддинги<small>локально</small></span></div>
+      </div>
+      <div class="band-sep">↓</div>
+      <div class="band hi">
+        <div class="band-l"><span class="band-n">03</span>Слой памяти</div>
+        <div class="band-c"><span class="tg">Граф знаний</span><span class="tg">Семантический индекс</span><span class="tg">Ответ + источник</span></div>
+      </div>
+      <div class="band-sep">↓</div>
+      <div class="band hr">
+        <div class="band-l"><span class="band-n">04</span>Агенты</div>
+        <div class="band-c"><span class="tg">Поиск + ответ</span><span class="tg">Действия<small>confirm-gate</small></span><span class="tg">в Telegram</span></div>
+      </div>
+    </div>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot g"></span>Каждый ответ — со ссылкой на заметку</span>
+      <span class="chip"><span class="dot g"></span>Необратимое — только через подтверждение</span>
+    </div>
+  </div>
+</section>
+
+<!-- 03 OBSIDIAN GRAPH -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow rise">Second brain</span>
+    <div class="split" style="margin-top:2px">
+      <div class="imgframe rise">
+        <div style="width:100%;aspect-ratio:2330/1546;overflow:hidden;background:linear-gradient(180deg,#fbfcff,#f1f3f9)">
+          <img src="assets/obsidian-graph.png" alt="Obsidian Graph View" style="width:100%;height:100%;object-fit:cover;object-position:50% 100%;display:block"
+               onerror="this.style.display='none';this.parentElement.nextElementSibling.style.display='flex'">
+        </div>
+        <div style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;aspect-ratio:16/11;background:linear-gradient(180deg,#fbfcff,#eef1f8);text-align:center;padding:24px">
+          <div style="font-size:30px">🧠</div><div style="font-weight:700">Obsidian Graph View</div><div class="note">assets/obsidian-graph.png</div>
+        </div>
+        <span class="cap">Мой живой граф · 1 267 связанных заметок</span>
+      </div>
+      <div class="grid rise" style="gap:22px">
+        <h2 class="head" style="font-size:clamp(26px,3.4vw,42px)">Obsidian как<br><span class="grad">карта контекста</span></h2>
+        <p class="lead" style="font-size:16px">Заметки, транскрипты и документы связаны в граф вручную и ссылками. Это фундамент, поверх которого работает вся память.</p>
+        <div class="grid g2" style="gap:22px">
+          <div class="stat"><span class="v grad">1 267</span><span class="l">заметок в графе</span></div>
+          <div class="stat"><span class="v grad">30+</span><span class="l">проектов в vault</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 MEMORY LAYER -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Слой памяти</span>
+    <h2 class="head rise">Поиск по смыслу, <span class="grad">а не по слову</span></h2>
+    <p class="lead rise">Vault нарезан на фрагменты и векторизован локально — модель находит нужное, даже если формулировка совсем другая. Ноль внешних API.</p>
+    <div class="grid g4 rise" style="margin-top:6px">
+      <div class="stat"><span class="v grad">12 755</span><span class="l">фрагментов</span></div>
+      <div class="stat"><span class="v grad">0.72–0.79</span><span class="l">точность поиска</span></div>
+      <div class="stat"><span class="v">Локально</span><span class="l">nomic-embed · Ollama</span></div>
+      <div class="stat"><span class="v">Ночью</span><span class="l">реиндекс сам</span></div>
+    </div>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot c3"></span>Векторный индекс ~54 МБ на диске</span>
+      <span class="chip"><span class="dot"></span>Косинусный поиск по numpy</span>
+    </div>
+  </div>
+</section>
+
+<!-- 05 JARVIS -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c2 rise">Ассистент</span>
+    <h2 class="head rise">Jarvis — <span class="grad">мой second brain</span><br>в Telegram</h2>
+    <div class="trio rise" style="margin-top:6px">
+      <div class="word"><div><span class="n">01</span><div class="t">Память + семантика</div></div><div class="d">Отвечает по vault, календарю и задачам — находит по смыслу и даёт ссылку.</div></div>
+      <div class="word"><div><span class="n">02</span><div class="t">Авто-роутинг моделей</div></div><div class="d">Сложное — на сильную модель, простое — на быструю. Качество там, где нужно.</div></div>
+      <div class="word"><div><span class="n">03</span><div class="t">Пассивное обучение</div></div><div class="d">Ночью сам вытаскивает устойчивые факты из диалогов в память.</div></div>
+    </div>
+    <div class="badge-row rise">
+      <span class="chip"><span class="dot g"></span>В проде на Mac mini 24/7</span>
+      <span class="chip"><span class="dot g"></span>~300 автотестов проходят</span>
+    </div>
+  </div>
+</section>
+
+<!-- 06 AGENTS + COCKPIT -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Агенты и действия</span>
+    <h2 class="head rise">Не только отвечает — <span class="grad">делает</span></h2>
+    <div class="split rev" style="margin-top:4px">
+      <div class="grid rise" style="gap:16px">
+        <p class="lead">Агент сам вызывает инструменты: ищет, ставит встречи, создаёт заметки и задачи, делегирует фоновые задачи. Необратимое — через «да».</p>
+        <div class="grid g2" style="gap:16px">
+          <div class="card"><span class="big">14</span><span class="note">инструментов агента</span></div>
+          <div class="card"><span class="big grad2">Confirm</span><span class="note">gate на необратимое</span></div>
+        </div>
+      </div>
+      <div class="imgframe rise" style="background:linear-gradient(180deg,#fbfcff,#eef1f8);padding:18px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;font-size:15px">Jarvis · очередь</span><span class="pill ok"><span class="dot g"></span>online</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic a" style="width:34px;height:34px;font-size:13px">Q</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">«Чем я занимался по проекту X?»</div><div class="note">semantic_search · со ссылками</div></div><span class="pill ok">готово</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic c" style="width:34px;height:34px;font-size:13px">C</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Поставить встречу после последней</div><div class="note">создать событие · ждёт «да»</div></div><span class="pill warn">confirm</span></div>
+          <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px"><span class="ic b" style="width:34px;height:34px;font-size:13px">D</span><div style="flex:1"><div style="font-size:13.5px;font-weight:600">Фоновая задача воркеру</div><div class="note">dispatch · статус позже</div></div><span class="pill run">в работе</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 LIVE FLOW -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow c3 rise">Как это выглядит вживую</span>
+    <h2 class="head rise">Один вопрос — <span class="grad">и действие</span></h2>
+    <div class="timeline rise" style="margin-top:6px">
+      <div class="week"><span class="wk">Шаг 1</span><h4>Спрашиваю</h4><ul><li>пишу в Telegram</li><li>обычным языком</li></ul></div>
+      <div class="week"><span class="wk">Шаг 2</span><h4>Собирает контекст</h4><ul><li>vault + календарь</li><li>по смыслу</li></ul></div>
+      <div class="week"><span class="wk">Шаг 3</span><h4>Отвечает</h4><ul><li>факты со ссылками</li><li>на мои заметки</li></ul></div>
+      <div class="week"><span class="wk">Шаг 4</span><h4>Делает</h4><ul><li>встреча / заметка</li><li>после «да»</li></ul></div>
+    </div>
+    <p class="lead rise" style="font-size:16px">Пример: «посмотри календарь и поставь встречу после последней» — <b>отрабатывает в один заход.</b></p>
+  </div>
+</section>
+
+<!-- 08 SUMMARY -->
+<section class="slide">
+  <div class="slide-inner">
+    <span class="eyebrow rise">Итог</span>
+    <h2 class="head rise"><span class="grad">Всё это уже работает.</span><br>Собрано мной.</h2>
+    <ul class="clean check rise" style="margin-top:6px">
+      <li><b>Second brain</b> в Obsidian — граф из 1 267 заметок</li>
+      <li><b>Слой памяти</b> — семантический индекс, 12 755 фрагментов, локально</li>
+      <li><b>Jarvis</b> — ассистент в Telegram с авто-роутингом моделей</li>
+      <li><b>Агенты</b> — 14 инструментов, действия с подтверждением</li>
+      <li><b>Пассивное обучение</b> — факты из диалогов копятся сами</li>
+      <li><b>В проде 24/7</b> — на своём железе, ~300 автотестов</li>
+    </ul>
+    <p class="note rise">Личная AI-система · demo · вся презентация редактируется в этом HTML</p>
+  </div>
+</section>
+
+</div></div>
+
+<div class="arrows"><button class="arrow" id="prev">‹</button><button class="arrow" id="next">›</button></div>
+<div class="dots" id="dots"></div>
+<div class="hint">↔ листать · P — печать</div>
+
+<script>
+(function(){
+  const track=document.getElementById('track');
+  const slides=[...track.children];
+  const total=slides.length, cur=document.getElementById('cur'), progress=document.getElementById('progress'), dotsWrap=document.getElementById('dots');
+  let i=0;
+  document.getElementById('total').textContent=String(total).padStart(2,'0');
+  slides.forEach((_,n)=>{const b=document.createElement('button');b.className='dnav'+(n===0?' on':'');b.onclick=()=>go(n);dotsWrap.appendChild(b);});
+  const dots=[...dotsWrap.children];
+  function reveal(s){s.querySelectorAll('.rise').forEach((e,k)=>e.style.transitionDelay=(80+k*90)+'ms');}
+  function go(n){
+    i=Math.max(0,Math.min(total-1,n));
+    track.style.transform='translateX('+(-i*100)+'vw)';
+    cur.textContent=String(i+1).padStart(2,'0');
+    progress.style.width=((i+1)/total*100)+'%';
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    slides.forEach((s,k)=>{if(k===i){reveal(s);s.classList.add('is-active');}else{s.classList.remove('is-active');}});
+  }
+  document.getElementById('next').onclick=()=>go(i+1);
+  document.getElementById('prev').onclick=()=>go(i-1);
+  window.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
+    else if(e.key==='Home')go(0);else if(e.key==='End')go(total-1);
+    else if(e.key==='p'||e.key==='P')window.print();
+  });
+  let x0=null;
+  track.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  track.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)go(i+(dx<0?1:-1));x0=null;},{passive:true});
+  go(0);
+})();
+</script>
+</body>
+</html>
